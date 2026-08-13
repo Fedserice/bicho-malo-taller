@@ -1,0 +1,122 @@
+/* --- CONTENEDOR CENTRADO EN PANTALLA --- */
+.login-wrapper {
+  min-height: 80vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+/* --- TARJETA DE LOGIN --- */
+.login-card {
+  background-color: #ffffff;
+  width: 100%;
+  max-width: 400px;
+  border-radius: 12px;
+  padding: 32px 28px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1),
+              0 8px 10px -6px rgba(0, 0, 0, 0.05);
+}
+
+/* --- ENCABEZADO Y LOGO --- */
+.login-header {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.login-icon {
+  font-size: 2.2rem;
+  background-color: #f1f5f9;
+  width: 60px;
+  height: 60px;
+  line-height: 60px;
+  border-radius: 50%;
+  margin: 0 auto 12px auto;
+}
+
+.login-header h1 {
+  font-size: 1.6rem;
+  color: #0f172a;
+  margin: 0 0 4px 0;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.login-header p {
+  font-size: 0.9rem;
+  color: #64748b;
+  margin: 0;
+}
+
+/* --- FORMULARIO Y CAMPOS --- */
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: left;
+}
+
+.input-group label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.input-group input {
+  padding: 12px 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  background-color: #f8fafc;
+  color: #0f172a;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.input-group input:focus {
+  border-color: #2563eb;
+  background-color: #ffffff;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+/* Placeholders */
+.input-group input::placeholder {
+  font-family: 'Inter', Roboto, sans-serif;
+  font-size: 0.88rem;
+  font-style: italic;
+  color: #522323;
+}
+
+/* --- BOTÓN DE INGRESO --- */
+.btn-login {
+  margin-top: 6px;
+  padding: 13px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #ffffff;
+  background-color: #522323;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+}
+
+.btn-login:hover {
+  background-color: #1242c5;
+  box-shadow: 0 6px 12px -2px rgba(37, 99, 235, 0.3);
+}
+
+.btn-login:active {
+  transform: scale(0.98);
+}
