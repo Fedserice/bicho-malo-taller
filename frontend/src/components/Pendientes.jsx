@@ -1,4 +1,4 @@
-import "./pendientes.css"
+import "./Pendientes.css"
 function Pendientes({ onVolver, onAbrir }) {
   const borradores = JSON.parse(
     localStorage.getItem("borradores") || "[]"
