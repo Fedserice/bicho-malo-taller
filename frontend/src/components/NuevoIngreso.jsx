@@ -1,7 +1,9 @@
-import { useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import Icon from "../ui/Icon";
 import Patente from "../ui/Patente";
 import { useToast } from "../ui/useToast";
+import { guardarIngreso, listarMecanicos } from "../lib/datos";
+import { useConsulta } from "../lib/useConsulta";
 import "./NuevoIngreso.css";
 
 const ESTADO_INICIAL = {
@@ -49,19 +51,32 @@ const pesos = new Intl.NumberFormat("es-AR", {
   maximumFractionDigits: 0,
 });
 
-function NuevoIngreso({ onVolver, borrador }) {
-  const [datos, setDatos] = useState(borrador || ESTADO_INICIAL);
+function NuevoIngreso({ onVolver, ingreso }) {
+  const [datos, setDatos] = useState(ingreso || ESTADO_INICIAL);
   const [faltantes, setFaltantes] = useState([]);
-  const [borradorPrevio, setBorradorPrevio] = useState(borrador);
+  const [guardando, setGuardando] = useState(null);
+  const [ingresoPrevio, setIngresoPrevio] = useState(ingreso);
   const formRef = useRef(null);
   const avisar = useToast();
 
-  // Si cambia el borrador que se está editando, el formulario se rearma.
-  if (borrador !== borradorPrevio) {
-    setBorradorPrevio(borrador);
-    setDatos(borrador || ESTADO_INICIAL);
+  const consultaMecanicos = useCallback(() => listarMecanicos(), []);
+  const { datos: mecanicos } = useConsulta(consultaMecanicos, []);
+
+  // Si cambia el ingreso que se está editando, el formulario se rearma.
+  if (ingreso !== ingresoPrevio) {
+    setIngresoPrevio(ingreso);
+    setDatos(ingreso || ESTADO_INICIAL);
     setFaltantes([]);
   }
+
+  const esEdicion = Boolean(datos.id);
+
+  // El mecánico guardado se mantiene aunque ya no esté en la lista activa.
+  const nombresMecanicos = (mecanicos ?? []).map((m) => m.nombre);
+  const opcionesMecanicos =
+    datos.mecanico && !nombresMecanicos.includes(datos.mecanico)
+      ? [...nombresMecanicos, datos.mecanico]
+      : nombresMecanicos;
 
   function cambiarDato(e) {
     const { name, value, type, checked } = e.target;
@@ -84,7 +99,7 @@ function NuevoIngreso({ onVolver, borrador }) {
     });
   }
 
-  function guardarBorrador() {
+  async function guardarEnTaller() {
     if (!(datos.patente || "").trim() && !(datos.cliente || "").trim()) {
       setFaltantes(["patente", "cliente"]);
       avisar("Cargá al menos la patente o el cliente para guardar", "error");
@@ -92,24 +107,19 @@ function NuevoIngreso({ onVolver, borrador }) {
       return;
     }
 
-    const borradores = JSON.parse(localStorage.getItem("borradores") || "[]");
+    setGuardando("taller");
 
-    const nuevoBorrador = {
-      id: borrador?.id || Date.now(),
-      ...datos,
-    };
-
-    const actualizados = borrador
-      ? borradores.map((b) => (b.id === borrador.id ? nuevoBorrador : b))
-      : [...borradores, nuevoBorrador];
-
-    localStorage.setItem("borradores", JSON.stringify(actualizados));
-
-    avisar("Ingreso guardado en el taller", "ok");
-    onVolver();
+    try {
+      await guardarIngreso(datos, { finalizado: false });
+      avisar("Ingreso guardado en el taller", "ok");
+      onVolver();
+    } catch (error) {
+      avisar(error.message || "No se pudo guardar el ingreso", "error");
+      setGuardando(null);
+    }
   }
 
-  function finalizarIngreso(e) {
+  async function finalizarIngreso(e) {
     e.preventDefault();
 
     const pendientes = buscarFaltantes();
@@ -131,30 +141,21 @@ function NuevoIngreso({ onVolver, borrador }) {
       return;
     }
 
-    const ingresos = JSON.parse(localStorage.getItem("ingresos") || "[]");
+    setGuardando("finalizar");
 
-    ingresos.push({
-      id: Date.now(),
-      ...datos,
-      estado: "Finalizado",
-    });
-
-    localStorage.setItem("ingresos", JSON.stringify(ingresos));
-
-    if (borrador) {
-      const borradores = JSON.parse(localStorage.getItem("borradores") || "[]");
-      const actualizados = borradores.filter((b) => b.id !== borrador.id);
-      localStorage.setItem("borradores", JSON.stringify(actualizados));
+    try {
+      await guardarIngreso(datos, { finalizado: true });
+      avisar("Ingreso finalizado y guardado en el historial", "ok");
+      onVolver();
+    } catch (error) {
+      avisar(error.message || "No se pudo finalizar el ingreso", "error");
+      setGuardando(null);
     }
-
-    avisar("Ingreso finalizado y guardado en el historial", "ok");
-    onVolver();
   }
 
   const claseCampo = (campo) => `campo ${faltantes.includes(campo) ? "campo--error" : ""}`.trim();
 
-  const sumaCostos =
-    (Number(datos.repuestosTaller) || 0) + (Number(datos.manoObra) || 0);
+  const sumaCostos = (Number(datos.repuestosTaller) || 0) + (Number(datos.manoObra) || 0);
 
   return (
     <div className="ingreso">
@@ -163,11 +164,9 @@ function NuevoIngreso({ onVolver, borrador }) {
         <Patente valor={datos.patente} tamano="lg" />
 
         <div className="ingreso__head-texto">
-          <span className="eyebrow">{borrador ? "Ingreso empezado" : "Alta de vehículo"}</span>
-          <h1>{borrador ? "Continuar ingreso" : "Nuevo ingreso"}</h1>
-          <p>
-            {datos.vehiculo?.trim() || "Cargá los datos del vehículo y del trabajo realizado."}
-          </p>
+          <span className="eyebrow">{esEdicion ? "Ingreso empezado" : "Alta de vehículo"}</span>
+          <h1>{esEdicion ? "Continuar ingreso" : "Nuevo ingreso"}</h1>
+          <p>{datos.vehiculo?.trim() || "Cargá los datos del vehículo y del trabajo realizado."}</p>
         </div>
       </header>
 
@@ -410,9 +409,11 @@ function NuevoIngreso({ onVolver, borrador }) {
               </label>
               <select id="mecanico" name="mecanico" value={datos.mecanico} onChange={cambiarDato}>
                 <option value="">Elegir mecánico</option>
-                <option value="Román Federice">Román Federice</option>
-                <option value="Gonzalo Federice">Gonzalo Federice</option>
-                <option value="Juan Mecánico">Juan Mecánico</option>
+                {opcionesMecanicos.map((nombre) => (
+                  <option key={nombre} value={nombre}>
+                    {nombre}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -466,13 +467,26 @@ function NuevoIngreso({ onVolver, borrador }) {
           </p>
 
           <div className="acciones__botones">
-            <button type="button" className="btn btn--outline" onClick={guardarBorrador}>
-              <Icon name="guardar" size={18} />
+            <button
+              type="button"
+              className="btn btn--outline"
+              onClick={guardarEnTaller}
+              disabled={guardando !== null}
+            >
+              {guardando === "taller" ? (
+                <span className="spinner spinner--boton" aria-hidden="true" />
+              ) : (
+                <Icon name="guardar" size={18} />
+              )}
               Guardar
             </button>
 
-            <button type="submit" className="btn btn--solid">
-              <Icon name="tilde" size={18} />
+            <button type="submit" className="btn btn--solid" disabled={guardando !== null}>
+              {guardando === "finalizar" ? (
+                <span className="spinner spinner--boton" aria-hidden="true" />
+              ) : (
+                <Icon name="tilde" size={18} />
+              )}
               Finalizar ingreso
             </button>
           </div>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Login from "./components/Login";
 import Inicio from "./components/Inicio";
 import NuevoIngreso from "./components/NuevoIngreso";
@@ -6,8 +6,11 @@ import Pendientes from "./components/Pendientes";
 import Buscar from "./components/Buscar";
 import Historial from "./components/Historial";
 import FichaIngreso from "./components/FichaIngreso";
+import FaltaConfig from "./components/FaltaConfig";
 import Icon from "./ui/Icon";
+import { Cargando } from "./ui/Estados";
 import { useToast } from "./ui/useToast";
+import { supabase, hayConfig } from "./lib/supabase";
 import "./App.css";
 
 // Cada pantalla declara cómo se llama y a dónde vuelve.
@@ -21,22 +24,61 @@ const PANTALLAS = {
 };
 
 function App() {
-  const [logueado, setLogueado] = useState(false);
+  const [sesion, setSesion] = useState(null);
+  const [revisandoSesion, setRevisandoSesion] = useState(hayConfig);
   const [pantalla, setPantalla] = useState("inicio");
-  const [borradorSeleccionado, setBorradorSeleccionado] = useState(null);
+  const [ingresoEnEdicion, setIngresoEnEdicion] = useState(null);
   const [ingresoSeleccionado, setIngresoSeleccionado] = useState(null);
   const avisar = useToast();
 
-  if (!logueado) {
-    return <Login onLogin={() => setLogueado(true)} />;
+  // Sesión guardada en el navegador + cambios de login/logout
+  useEffect(() => {
+    if (!hayConfig) return undefined;
+
+    supabase.auth.getSession().then(({ data }) => {
+      setSesion(data.session);
+      setRevisandoSesion(false);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_evento, sesionNueva) => {
+      setSesion(sesionNueva);
+      setRevisandoSesion(false);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  if (!hayConfig) {
+    return <FaltaConfig />;
+  }
+
+  if (revisandoSesion) {
+    return (
+      <div className="app">
+        <div className="franja" aria-hidden="true" />
+        <Cargando texto="Abriendo el taller…" />
+      </div>
+    );
+  }
+
+  if (!sesion) {
+    return <Login />;
   }
 
   const actual = PANTALLAS[pantalla] ?? PANTALLAS.inicio;
 
-  function cerrarSesion() {
-    setLogueado(false);
+  async function cerrarSesion() {
+    const { error } = await supabase.auth.signOut();
+
+    if (error) {
+      avisar("No se pudo cerrar la sesión. Probá de nuevo.", "error");
+      return;
+    }
+
     setPantalla("inicio");
-    setBorradorSeleccionado(null);
+    setIngresoEnEdicion(null);
     setIngresoSeleccionado(null);
     avisar("Sesión cerrada", "info");
   }
@@ -74,19 +116,23 @@ function App() {
             )}
           </div>
 
-          <button type="button" className="btn btn--ghost btn--sm topbar__salir" onClick={cerrarSesion}>
+          <button
+            type="button"
+            className="btn btn--ghost btn--sm topbar__salir"
+            onClick={cerrarSesion}
+          >
             <Icon name="salir" size={17} />
             <span className="topbar__salir-texto">Salir</span>
           </button>
         </div>
       </header>
 
-      {/* La `key` remonta el contenido: cada cambio de pantalla entra con su propia animación. */}
+      {/* La `key` remonta el contenido: cada pantalla entra con su animación y recarga sus datos. */}
       <main className="app__contenido" key={pantalla}>
         {pantalla === "inicio" && (
           <Inicio
             onNuevoIngreso={() => {
-              setBorradorSeleccionado(null);
+              setIngresoEnEdicion(null);
               setPantalla("nuevo");
             }}
             onBuscar={() => setPantalla("buscar")}
@@ -96,7 +142,7 @@ function App() {
         )}
 
         {pantalla === "nuevo" && (
-          <NuevoIngreso borrador={borradorSeleccionado} onVolver={() => setPantalla("inicio")} />
+          <NuevoIngreso ingreso={ingresoEnEdicion} onVolver={() => setPantalla("inicio")} />
         )}
 
         {pantalla === "buscar" && <Buscar />}
@@ -116,12 +162,12 @@ function App() {
 
         {pantalla === "pendientes" && (
           <Pendientes
-            onAbrir={(borrador) => {
-              setBorradorSeleccionado(borrador);
+            onAbrir={(ingreso) => {
+              setIngresoEnEdicion(ingreso);
               setPantalla("nuevo");
             }}
             onNuevoIngreso={() => {
-              setBorradorSeleccionado(null);
+              setIngresoEnEdicion(null);
               setPantalla("nuevo");
             }}
           />

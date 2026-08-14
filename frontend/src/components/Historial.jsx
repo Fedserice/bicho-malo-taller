@@ -1,6 +1,10 @@
+import { useCallback } from "react";
 import Icon from "../ui/Icon";
 import Patente from "../ui/Patente";
 import EstadoChip from "../ui/EstadoChip";
+import { Cargando, ErrorDatos } from "../ui/Estados";
+import { listarHistorial } from "../lib/datos";
+import { useConsulta } from "../lib/useConsulta";
 import "./Historial.css";
 
 const pesos = new Intl.NumberFormat("es-AR", {
@@ -9,18 +13,11 @@ const pesos = new Intl.NumberFormat("es-AR", {
   maximumFractionDigits: 0,
 });
 
-function leerIngresos() {
-  try {
-    const guardado = JSON.parse(localStorage.getItem("ingresos") || "[]");
-    return Array.isArray(guardado) ? guardado : [];
-  } catch {
-    return [];
-  }
-}
-
 function Historial({ onSeleccionar }) {
-  // El último trabajo cerrado es el que más se consulta: va primero.
-  const ingresos = leerIngresos().slice().reverse();
+  const consulta = useCallback(() => listarHistorial(), []);
+  const { cargando, error, datos } = useConsulta(consulta, []);
+
+  const ingresos = datos ?? [];
 
   return (
     <div className="historial">
@@ -31,7 +28,7 @@ function Historial({ onSeleccionar }) {
           <p>Tocá un registro para abrir la ficha completa del vehículo.</p>
         </div>
 
-        {ingresos.length > 0 && (
+        {!cargando && ingresos.length > 0 && (
           <div className="pantalla-head__cuenta">
             <strong>{ingresos.length}</strong>
             {ingresos.length === 1 ? "registro" : "registros"}
@@ -39,7 +36,11 @@ function Historial({ onSeleccionar }) {
         )}
       </header>
 
-      {ingresos.length === 0 ? (
+      {error && <ErrorDatos mensaje={error} />}
+
+      {cargando && <Cargando texto="Trayendo el historial…" />}
+
+      {!cargando && !error && ingresos.length === 0 && (
         <div className="vacio">
           <span className="vacio__icono">
             <Icon name="planilla" size={24} />
@@ -47,7 +48,9 @@ function Historial({ onSeleccionar }) {
           <h3>Todavía no hay trabajos cerrados</h3>
           <p>Cuando finalices un ingreso, el trabajo queda guardado acá con toda su ficha.</p>
         </div>
-      ) : (
+      )}
+
+      {!cargando && ingresos.length > 0 && (
         <div className="historial__lista stagger">
           {ingresos.map((ingreso, i) => (
             <button

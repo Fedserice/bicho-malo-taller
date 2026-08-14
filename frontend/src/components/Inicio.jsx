@@ -1,4 +1,8 @@
+import { useCallback } from "react";
 import Icon from "../ui/Icon";
+import { ErrorDatos } from "../ui/Estados";
+import { obtenerResumen } from "../lib/datos";
+import { useConsulta } from "../lib/useConsulta";
 import "./Inicio.css";
 
 const pesos = new Intl.NumberFormat("es-AR", {
@@ -7,29 +11,22 @@ const pesos = new Intl.NumberFormat("es-AR", {
   maximumFractionDigits: 0,
 });
 
-function leer(clave) {
-  try {
-    const guardado = JSON.parse(localStorage.getItem(clave) || "[]");
-    return Array.isArray(guardado) ? guardado : [];
-  } catch {
-    return [];
-  }
-}
+const RESUMEN_VACIO = { enTaller: 0, cerrados: 0, facturado: 0 };
 
 function Inicio({ onNuevoIngreso, onBuscar, onHistorial, onPendientes }) {
-  const borradores = leer("borradores");
-  const ingresos = leer("ingresos");
+  const consulta = useCallback(() => obtenerResumen(), []);
+  const { cargando, error, datos } = useConsulta(consulta, RESUMEN_VACIO);
 
-  const facturado = ingresos.reduce(
-    (total, ingreso) => total + (Number(ingreso.totalCobrado) || 0),
-    0
-  );
+  const resumen = datos ?? RESUMEN_VACIO;
 
   const hoy = new Date().toLocaleDateString("es-AR", {
     weekday: "long",
     day: "numeric",
     month: "long",
   });
+
+  // Mientras cargan las cifras se muestra un guion, no un cero que después salta.
+  const cifra = (valor) => (cargando ? "—" : valor);
 
   return (
     <div className="inicio">
@@ -38,26 +35,30 @@ function Inicio({ onNuevoIngreso, onBuscar, onHistorial, onPendientes }) {
         <h1>Panel del taller</h1>
       </header>
 
-      {/* Estado del taller, leído de lo que ya está cargado */}
+      {error && <ErrorDatos mensaje={error} />}
+
+      {/* Estado del taller */}
       <section className="inicio__cifras" aria-label="Resumen del taller">
         <button type="button" className="cifra cifra--activa" onClick={onPendientes}>
           <span className="cifra__label">En el taller</span>
-          <span className="cifra__valor num">{borradores.length}</span>
+          <span className="cifra__valor num">{cifra(resumen.enTaller)}</span>
           <span className="cifra__pie">
-            {borradores.length === 1 ? "vehículo sin cerrar" : "vehículos sin cerrar"}
+            {resumen.enTaller === 1 ? "vehículo sin cerrar" : "vehículos sin cerrar"}
             <Icon name="chevron" size={14} />
           </span>
         </button>
 
         <div className="cifra">
           <span className="cifra__label">Trabajos cerrados</span>
-          <span className="cifra__valor num">{ingresos.length}</span>
+          <span className="cifra__valor num">{cifra(resumen.cerrados)}</span>
           <span className="cifra__pie">en el historial</span>
         </div>
 
         <div className="cifra">
           <span className="cifra__label">Total cobrado</span>
-          <span className="cifra__valor cifra__valor--monto num">{pesos.format(facturado)}</span>
+          <span className="cifra__valor cifra__valor--monto num">
+            {cifra(pesos.format(resumen.facturado))}
+          </span>
           <span className="cifra__pie">sobre trabajos cerrados</span>
         </div>
       </section>
@@ -93,7 +94,7 @@ function Inicio({ onNuevoIngreso, onBuscar, onHistorial, onPendientes }) {
             <span className="tile__titulo">En el taller</span>
             <span className="tile__desc">Ingresos empezados sin cerrar</span>
           </span>
-          {borradores.length > 0 && <span className="tile__contador num">{borradores.length}</span>}
+          {resumen.enTaller > 0 && <span className="tile__contador num">{resumen.enTaller}</span>}
         </button>
 
         <button type="button" className="tile tile--ancho" onClick={onHistorial}>

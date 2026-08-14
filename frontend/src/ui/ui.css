@@ -34,6 +34,14 @@
   transform: scale(var(--press));
 }
 
+.btn:disabled {
+  opacity: 0.55;
+}
+
+.btn:disabled:active {
+  transform: none;
+}
+
 .btn .icon {
   flex: none;
 }
@@ -395,6 +403,13 @@
   cursor: pointer;
 }
 
+.campo input:disabled,
+.campo select:disabled,
+.campo textarea:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
 /* Campo señalado por la validación */
 .campo--error input,
 .campo--error select,
@@ -492,6 +507,71 @@
 
 .vacio .btn {
   margin-top: 14px;
+}
+
+/* ------------------------------------------------------------
+   Cargando y errores
+   ------------------------------------------------------------ */
+
+.cargando {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 56px 24px;
+  color: var(--ink-3);
+  font-size: 0.9rem;
+  animation: bm-fade var(--dur) var(--ease-out);
+}
+
+.spinner {
+  width: 28px;
+  height: 28px;
+  border: 2.5px solid var(--line-strong);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: bm-girar 700ms linear infinite;
+}
+
+@keyframes bm-girar {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Spinner dentro de un botón: hereda el color del texto */
+.spinner--boton {
+  width: 16px;
+  height: 16px;
+  border-width: 2px;
+  border-color: color-mix(in srgb, currentColor 28%, transparent);
+  border-top-color: currentColor;
+}
+
+/* El giro informa que algo está pasando: se ralentiza, no se apaga */
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation-duration: 1600ms;
+  }
+}
+
+.aviso-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px 16px;
+  border: 1px solid var(--danger-line);
+  border-radius: var(--r);
+  background: var(--danger-soft);
+  color: var(--danger);
+  font-size: 0.9rem;
+  line-height: 1.45;
+  animation: bm-rise var(--dur-fast) var(--ease-out);
+}
+
+.aviso-error svg {
+  flex: none;
+  margin-top: 2px;
 }
 
 /* ------------------------------------------------------------

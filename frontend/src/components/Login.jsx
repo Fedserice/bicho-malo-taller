@@ -1,23 +1,66 @@
 import { useState } from "react";
 import Icon from "../ui/Icon";
 import Patente from "../ui/Patente";
+import { supabase } from "../lib/supabase";
 import "./Login.css";
 
-function Login({ onLogin }) {
-  const [usuario, setUsuario] = useState("");
+/** Los mensajes de Supabase vienen en inglés y en tono técnico. */
+function traducirError(mensaje = "") {
+  const texto = mensaje.toLowerCase();
+
+  if (texto.includes("invalid login credentials")) {
+    return "Email o contraseña incorrectos. Revisá los datos e intentá de nuevo.";
+  }
+  if (texto.includes("email not confirmed")) {
+    return "Ese usuario todavía no confirmó su email.";
+  }
+  if (texto.includes("too many requests") || texto.includes("rate limit")) {
+    return "Demasiados intentos seguidos. Esperá un minuto y probá otra vez.";
+  }
+  if (texto.includes("failed to fetch") || texto.includes("network")) {
+    return "No hay conexión con el servidor. Fijate si tenés internet.";
+  }
+
+  return mensaje || "No se pudo entrar. Probá de nuevo.";
+}
+
+function Login() {
+  const [email, setEmail] = useState("");
   const [contrasena, setContrasena] = useState("");
   const [verClave, setVerClave] = useState(false);
   const [error, setError] = useState("");
+  const [entrando, setEntrando] = useState(false);
 
-  function ingresar(e) {
+  async function ingresar(e) {
     e.preventDefault();
 
-    if (usuario.trim() === "taller" && contrasena.trim() === "1234") {
-      setError("");
-      onLogin();
-    } else {
-      setError("Usuario o contraseña incorrectos. Revisá los datos e intentá de nuevo.");
+    if (!email.trim() || !contrasena) {
+      setError("Completá el email y la contraseña.");
+      return;
     }
+
+    setEntrando(true);
+    setError("");
+
+    const { error: fallo } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password: contrasena,
+    });
+
+    if (fallo) {
+      setError(traducirError(fallo.message));
+      setEntrando(false);
+      return;
+    }
+
+    // Con sesión válida, App cambia solo por onAuthStateChange.
+  }
+
+  function alEscribir(setter) {
+    return (e) => {
+      setter(e.target.value);
+      if (error) setError("");
+    };
   }
 
   return (
@@ -66,25 +109,24 @@ function Login({ onLogin }) {
               </span>
               <div>
                 <h2>Acceso al sistema</h2>
-                <p>Entrá con el usuario del taller</p>
+                <p>Entrá con tu cuenta del taller</p>
               </div>
             </div>
 
             <form onSubmit={ingresar} className="login__form" noValidate>
               <div className="campo">
-                <label htmlFor="usuario">Usuario</label>
+                <label htmlFor="email">Email</label>
                 <input
-                  id="usuario"
-                  type="text"
-                  placeholder="taller"
-                  value={usuario}
-                  onChange={(e) => {
-                    setUsuario(e.target.value);
-                    if (error) setError("");
-                  }}
+                  id="email"
+                  type="email"
+                  inputMode="email"
+                  placeholder="nombre@taller.com"
+                  value={email}
+                  onChange={alEscribir(setEmail)}
                   autoComplete="username"
                   autoCapitalize="none"
                   spellCheck="false"
+                  disabled={entrando}
                 />
               </div>
 
@@ -94,13 +136,11 @@ function Login({ onLogin }) {
                   <input
                     id="contrasena"
                     type={verClave ? "text" : "password"}
-                    placeholder="••••"
+                    placeholder="Tu contraseña"
                     value={contrasena}
-                    onChange={(e) => {
-                      setContrasena(e.target.value);
-                      if (error) setError("");
-                    }}
+                    onChange={alEscribir(setContrasena)}
                     autoComplete="current-password"
+                    disabled={entrando}
                   />
                   <button
                     type="button"
@@ -120,9 +160,22 @@ function Login({ onLogin }) {
                 </p>
               )}
 
-              <button type="submit" className="btn btn--primary btn--lg btn--block">
-                Entrar
-                <Icon name="derecha" size={18} />
+              <button
+                type="submit"
+                className="btn btn--primary btn--lg btn--block"
+                disabled={entrando}
+              >
+                {entrando ? (
+                  <>
+                    <span className="spinner spinner--boton" aria-hidden="true" />
+                    Entrando…
+                  </>
+                ) : (
+                  <>
+                    Entrar
+                    <Icon name="derecha" size={18} />
+                  </>
+                )}
               </button>
             </form>
           </div>
