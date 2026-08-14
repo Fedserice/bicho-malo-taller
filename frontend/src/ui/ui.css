@@ -1,0 +1,613 @@
+/* ============================================================
+   Primitivas compartidas: botones, campos, tarjetas, patente,
+   chips de estado, estados vacíos y avisos.
+   ============================================================ */
+
+/* ------------------------------------------------------------
+   Botones
+   ------------------------------------------------------------ */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 18px;
+  border: 1px solid transparent;
+  border-radius: var(--r);
+  background: transparent;
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--ink);
+  text-decoration: none;
+  transition:
+    background-color var(--dur-fast) ease,
+    border-color var(--dur-fast) ease,
+    color var(--dur-fast) ease,
+    box-shadow var(--dur-fast) ease,
+    transform var(--dur-press) var(--ease-out);
+}
+
+.btn:active {
+  transform: scale(var(--press));
+}
+
+.btn .icon {
+  flex: none;
+}
+
+/* Primario: ámbar industrial */
+.btn--primary {
+  background: var(--accent);
+  color: var(--on-accent);
+  box-shadow: var(--shadow-1);
+}
+
+.btn--primary:hover {
+  background: var(--accent-hover);
+  box-shadow: var(--shadow-2);
+}
+
+/* Sólido grafito: la acción de cierre de un flujo */
+.btn--solid {
+  background: var(--ink);
+  color: var(--ink-inv);
+  box-shadow: var(--shadow-1);
+}
+
+.btn--solid:hover {
+  background: var(--ink-2);
+  box-shadow: var(--shadow-2);
+}
+
+/* Contorno: acciones secundarias */
+.btn--outline {
+  border-color: var(--line-strong);
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.btn--outline:hover {
+  border-color: var(--ink-3);
+  background: var(--surface-2);
+}
+
+/* Fantasma: navegación y acciones terciarias */
+.btn--ghost {
+  color: var(--ink-2);
+}
+
+.btn--ghost:hover {
+  background: var(--surface-3);
+  color: var(--ink);
+}
+
+.btn--danger {
+  color: var(--danger);
+  border-color: var(--danger-line);
+  background: var(--surface);
+}
+
+.btn--danger:hover {
+  background: var(--danger-soft);
+  border-color: var(--danger);
+}
+
+.btn--block {
+  width: 100%;
+}
+
+.btn--sm {
+  min-height: 36px;
+  padding: 0 12px;
+  font-size: 0.82rem;
+  gap: 6px;
+}
+
+.btn--lg {
+  min-height: 52px;
+  padding: 0 24px;
+  font-size: 1rem;
+}
+
+/* Botón sólo icono */
+.btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid transparent;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--ink-3);
+  transition:
+    background-color var(--dur-fast) ease,
+    color var(--dur-fast) ease,
+    transform var(--dur-press) var(--ease-out);
+}
+
+.btn-icon:hover {
+  background: var(--surface-3);
+  color: var(--ink);
+}
+
+.btn-icon:active {
+  transform: scale(var(--press));
+}
+
+/* ------------------------------------------------------------
+   Superficies
+   ------------------------------------------------------------ */
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-1);
+}
+
+.panel__head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--line);
+}
+
+.panel__body {
+  padding: 20px;
+}
+
+/* ------------------------------------------------------------
+   La patente: elemento firma de la app.
+   Cada registro se identifica por su chapa, no por un id.
+   ------------------------------------------------------------ */
+
+.patente {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: stretch;
+  flex: none;
+  min-width: 96px;
+  border: 1.5px solid var(--plate-ink);
+  border-radius: 5px;
+  background: var(--plate-bg);
+  overflow: hidden;
+  box-shadow: var(--shadow-1);
+}
+
+.patente__tira {
+  height: 7px;
+  background: var(--plate-blue);
+}
+
+.patente__texto {
+  padding: 3px 10px 4px;
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  text-align: center;
+  color: var(--plate-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.patente--lg {
+  min-width: 140px;
+}
+
+.patente--lg .patente__tira {
+  height: 10px;
+}
+
+.patente--lg .patente__texto {
+  padding: 6px 16px 8px;
+  font-size: 1.75rem;
+}
+
+.patente--sm {
+  min-width: 78px;
+}
+
+.patente--sm .patente__tira {
+  height: 5px;
+}
+
+.patente--sm .patente__texto {
+  padding: 2px 8px 3px;
+  font-size: 0.85rem;
+}
+
+/* Chapa sin datos: se ve claramente distinta de una patente real */
+.patente--vacia {
+  border-style: dashed;
+  border-color: var(--line-strong);
+  background: var(--surface-2);
+  box-shadow: none;
+}
+
+.patente--vacia .patente__tira {
+  background: var(--line-strong);
+}
+
+.patente--vacia .patente__texto {
+  color: var(--ink-3);
+  letter-spacing: 0.08em;
+}
+
+/* ------------------------------------------------------------
+   Chips de estado
+   ------------------------------------------------------------ */
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+  padding: 4px 11px 4px 9px;
+  border: 1px solid var(--neutral-line);
+  border-radius: var(--r-pill);
+  background: var(--neutral-soft);
+  color: var(--neutral);
+  font-size: 0.73rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.chip__punto {
+  width: 7px;
+  height: 7px;
+  flex: none;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.chip--activo {
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+}
+
+.chip--ok {
+  border-color: var(--ok-line);
+  background: var(--ok-soft);
+  color: var(--ok);
+}
+
+.chip--info {
+  border-color: var(--info-line);
+  background: var(--info-soft);
+  color: var(--info);
+}
+
+/* Un punto que late mientras el auto está en el taller */
+.chip--activo .chip__punto {
+  animation: bm-latido 2.4s var(--ease-in-out) infinite;
+}
+
+@keyframes bm-latido {
+  0%,
+  100% {
+    opacity: 1;
+    box-shadow: 0 0 0 0 var(--accent-ring);
+  }
+  50% {
+    opacity: 0.65;
+    box-shadow: 0 0 0 4px transparent;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chip--activo .chip__punto {
+    animation: none;
+  }
+}
+
+/* ------------------------------------------------------------
+   Campos de formulario
+   ------------------------------------------------------------ */
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+}
+
+.campo > label,
+.campo__label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.campo__req {
+  color: var(--accent-ink);
+}
+
+.campo input,
+.campo select,
+.campo textarea {
+  width: 100%;
+  min-height: 46px;
+  padding: 11px 14px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r);
+  background: var(--surface-2);
+  color: var(--ink);
+  font-size: 0.95rem;
+  outline: none;
+  transition:
+    border-color var(--dur-fast) ease,
+    background-color var(--dur-fast) ease,
+    box-shadow var(--dur-fast) ease;
+}
+
+.campo textarea {
+  resize: vertical;
+  min-height: 72px;
+  line-height: 1.45;
+}
+
+.campo select {
+  appearance: none;
+  padding-right: 38px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236c7684' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+  cursor: pointer;
+}
+
+.campo input::placeholder,
+.campo textarea::placeholder {
+  color: var(--ink-3);
+  opacity: 0.75;
+}
+
+.campo input:hover,
+.campo select:hover,
+.campo textarea:hover {
+  border-color: var(--ink-3);
+}
+
+.campo input:focus,
+.campo select:focus,
+.campo textarea:focus {
+  border-color: var(--accent);
+  background: var(--surface);
+  box-shadow: 0 0 0 3px var(--accent-ring);
+}
+
+.campo input[type="date"] {
+  cursor: pointer;
+}
+
+/* Campo señalado por la validación */
+.campo--error input,
+.campo--error select,
+.campo--error textarea {
+  border-color: var(--danger);
+  background: var(--danger-soft);
+}
+
+.campo__error {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--danger);
+  animation: bm-fade var(--dur-fast) var(--ease-out);
+}
+
+/* Casilla de verificación */
+.check {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: var(--surface-2);
+  cursor: pointer;
+  transition:
+    border-color var(--dur-fast) ease,
+    background-color var(--dur-fast) ease;
+}
+
+.check:hover {
+  border-color: var(--line-strong);
+}
+
+.check:has(input:checked) {
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+}
+
+.check input {
+  width: 20px;
+  height: 20px;
+  flex: none;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.check span {
+  font-size: 0.92rem;
+  font-weight: 500;
+  color: var(--ink-2);
+}
+
+/* ------------------------------------------------------------
+   Estado vacío
+   ------------------------------------------------------------ */
+
+.vacio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 48px 24px;
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--r-lg);
+  background: var(--surface-2);
+  text-align: center;
+  animation: bm-fade var(--dur) var(--ease-out);
+}
+
+.vacio__icono {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  margin-bottom: 6px;
+  border-radius: 50%;
+  background: var(--surface-3);
+  color: var(--ink-3);
+}
+
+.vacio h3 {
+  font-size: 1.15rem;
+  color: var(--ink);
+}
+
+.vacio p {
+  max-width: 40ch;
+  font-size: 0.9rem;
+  color: var(--ink-3);
+}
+
+.vacio .btn {
+  margin-top: 14px;
+}
+
+/* ------------------------------------------------------------
+   Avisos (toasts)
+   ------------------------------------------------------------ */
+
+.toasts {
+  position: fixed;
+  left: 50%;
+  bottom: max(20px, env(safe-area-inset-bottom));
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: min(420px, calc(100vw - 32px));
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 13px 14px;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--neutral);
+  border-radius: var(--r);
+  background: var(--surface);
+  box-shadow: var(--shadow-3);
+  color: var(--ink);
+  font-size: 0.92rem;
+  font-weight: 500;
+  pointer-events: auto;
+  /* Transición, no keyframes: si entran dos avisos seguidos se
+     reencaminan en lugar de reiniciarse. */
+  opacity: 0;
+  transform: translateY(calc(var(--shift) + 6px)) scale(0.97);
+  transition:
+    opacity var(--dur) var(--ease-out),
+    transform var(--dur) var(--ease-out);
+}
+
+.toast--visible {
+  opacity: 1;
+  transform: none;
+}
+
+.toast__icono {
+  flex: none;
+  color: var(--neutral);
+}
+
+.toast--ok {
+  border-left-color: var(--ok);
+}
+
+.toast--ok .toast__icono {
+  color: var(--ok);
+}
+
+.toast--error {
+  border-left-color: var(--danger);
+}
+
+.toast--error .toast__icono {
+  color: var(--danger);
+}
+
+.toast--info {
+  border-left-color: var(--accent);
+}
+
+.toast--info .toast__icono {
+  color: var(--accent);
+}
+
+.toast__cerrar {
+  margin-left: auto;
+}
+
+/* ------------------------------------------------------------
+   Dato etiquetado (fichas y resultados)
+   ------------------------------------------------------------ */
+
+.dato {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.dato__label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.dato__valor {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--ink);
+  word-break: break-word;
+}
+
+.dato__texto {
+  padding: 10px 12px;
+  border-radius: var(--r-sm);
+  background: var(--surface-2);
+  border-left: 2px solid var(--line-strong);
+  font-size: 0.92rem;
+  line-height: 1.5;
+  color: var(--ink-2);
+  white-space: pre-wrap;
+}

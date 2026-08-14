@@ -1,62 +1,162 @@
+import Icon from "../ui/Icon";
+import Patente from "../ui/Patente";
+import EstadoChip from "../ui/EstadoChip";
+import "./FichaIngreso.css";
+
+const pesos = new Intl.NumberFormat("es-AR", {
+  style: "currency",
+  currency: "ARS",
+  maximumFractionDigits: 0,
+});
+
+const kilometros = new Intl.NumberFormat("es-AR");
+
 function FichaIngreso({ ingreso, onVolver }) {
+  const repuestos = Number(ingreso.repuestosTaller) || 0;
+  const manoObra = Number(ingreso.manoObra) || 0;
+  const total = Number(ingreso.totalCobrado) || 0;
+
   return (
-    <div>
-      <h1>🚗 Ficha del vehículo</h1>
+    <div className="ficha">
+      <header className="ficha__head">
+        <Patente valor={ingreso.patente} tamano="lg" />
 
-      <h2>
-        {ingreso.patente} — {ingreso.vehiculo}
-      </h2>
+        <div className="ficha__id">
+          <span className="eyebrow">Ficha del vehículo</span>
+          <h1>{ingreso.vehiculo || "Vehículo sin cargar"}</h1>
+          <div className="ficha__meta">
+            <EstadoChip estado={ingreso.estado} />
+            {ingreso.fecha && (
+              <span className="ficha__fecha">
+                <Icon name="calendario" size={14} />
+                <span className="num">{ingreso.fecha}</span>
+              </span>
+            )}
+          </div>
+        </div>
+      </header>
 
-      <hr />
+      <div className="ficha__grid">
+        {/* Cliente */}
+        <section className="bloque">
+          <h2 className="bloque__titulo">
+            <Icon name="persona" size={17} />
+            Cliente
+          </h2>
+          <div className="bloque__datos">
+            <div className="dato">
+              <span className="dato__label">Nombre</span>
+              <span className="dato__valor">{ingreso.cliente || "—"}</span>
+            </div>
+            <div className="dato">
+              <span className="dato__label">Teléfono</span>
+              <span className="dato__valor num">{ingreso.telefono || "—"}</span>
+            </div>
+          </div>
+        </section>
 
-      <h3>👤 Cliente</h3>
-      <p><strong>Nombre:</strong> {ingreso.cliente}</p>
-      <p><strong>Teléfono:</strong> {ingreso.telefono || "—"}</p>
+        {/* Vehículo */}
+        <section className="bloque">
+          <h2 className="bloque__titulo">
+            <Icon name="auto" size={17} />
+            Vehículo
+          </h2>
+          <div className="bloque__datos">
+            <div className="dato">
+              <span className="dato__label">Kilometraje</span>
+              <span className="dato__valor num">
+                {ingreso.kilometraje ? `${kilometros.format(ingreso.kilometraje)} km` : "—"}
+              </span>
+            </div>
+            <div className="dato">
+              <span className="dato__label">Mecánico a cargo</span>
+              <span className="dato__valor">{ingreso.mecanico || "—"}</span>
+            </div>
+          </div>
+        </section>
 
-      <h3>🚗 Vehículo</h3>
-      <p><strong>Vehículo:</strong> {ingreso.vehiculo}</p>
-      <p><strong>Patente:</strong> {ingreso.patente}</p>
-      <p><strong>Kilometraje:</strong> {ingreso.kilometraje || "—"} km</p>
-      <p><strong>Fecha de ingreso:</strong> {ingreso.fecha}</p>
+        {/* Trabajo */}
+        <section className="bloque bloque--ancho">
+          <h2 className="bloque__titulo">
+            <Icon name="llave" size={17} />
+            Trabajo
+          </h2>
+          <div className="bloque__datos bloque__datos--columna">
+            <div className="dato">
+              <span className="dato__label">Motivo del ingreso</span>
+              <p className="dato__texto">{ingreso.motivo || "—"}</p>
+            </div>
+            <div className="dato">
+              <span className="dato__label">Diagnóstico</span>
+              <p className="dato__texto">{ingreso.diagnostico || "—"}</p>
+            </div>
+            <div className="dato">
+              <span className="dato__label">Trabajos realizados</span>
+              <p className="dato__texto">{ingreso.trabajos || "—"}</p>
+            </div>
+          </div>
+        </section>
 
-      <h3>🔧 Trabajo</h3>
-      <p><strong>Motivo:</strong> {ingreso.motivo || "—"}</p>
-      <p><strong>Diagnóstico:</strong> {ingreso.diagnostico || "—"}</p>
-      <p><strong>Trabajos realizados:</strong> {ingreso.trabajos || "—"}</p>
+        {/* Cierre económico */}
+        <section className="bloque bloque--ancho cuenta">
+          <h2 className="bloque__titulo">
+            <Icon name="peso" size={17} />
+            Cuenta
+          </h2>
 
-      <h3>📦 Repuestos</h3>
-      <p>
-        <strong>Repuestos del taller:</strong>{" "}
-        ${ingreso.repuestosTaller || 0}
-      </p>
+          <div className="cuenta__filas">
+            <div className="cuenta__fila">
+              <span>
+                <Icon name="caja" size={15} />
+                Repuestos del taller
+              </span>
+              <span className="num">{pesos.format(repuestos)}</span>
+            </div>
 
-      <p>
-        <strong>Repuestos aportados por cliente:</strong>{" "}
-        {ingreso.repuestosCliente ? "Sí" : "No"}
-      </p>
+            <div className="cuenta__fila">
+              <span>
+                <Icon name="llave" size={15} />
+                Mano de obra
+              </span>
+              <span className="num">{pesos.format(manoObra)}</span>
+            </div>
 
-      <h3>💰 Costos</h3>
-      <p>
-        <strong>Mano de obra:</strong> ${ingreso.manoObra || 0}
-      </p>
+            <div className="cuenta__fila">
+              <span>
+                <Icon name="persona" size={15} />
+                Repuestos puestos por el cliente
+              </span>
+              <span>{ingreso.repuestosCliente ? "Sí" : "No"}</span>
+            </div>
+          </div>
 
-      <p>
-        <strong>Total cobrado:</strong> ${ingreso.totalCobrado || 0}
-      </p>
+          <div className="cuenta__total">
+            <span className="cuenta__total-label">Total cobrado</span>
+            <span className="cuenta__total-valor num">{pesos.format(total)}</span>
+          </div>
+        </section>
 
-      <h3>📊 Estado</h3>
-      <p>{ingreso.estado}</p>
+        {/* Notas */}
+        <section className="bloque">
+          <h2 className="bloque__titulo">
+            <Icon name="planilla" size={17} />
+            Pendientes
+          </h2>
+          <p className="dato__texto">{ingreso.pendientes || "Ninguno"}</p>
+        </section>
 
-      <h3>📋 Pendientes</h3>
-      <p>{ingreso.pendientes || "Ninguno"}</p>
+        <section className="bloque">
+          <h2 className="bloque__titulo">
+            <Icon name="nota" size={17} />
+            Observaciones
+          </h2>
+          <p className="dato__texto">{ingreso.observaciones || "—"}</p>
+        </section>
+      </div>
 
-      <h3>📝 Observaciones</h3>
-      <p>{ingreso.observaciones || "—"}</p>
-
-      <br />
-
-      <button onClick={onVolver}>
-        ← Volver
+      <button type="button" className="btn btn--outline ficha__volver" onClick={onVolver}>
+        <Icon name="izquierda" size={18} />
+        Volver al historial
       </button>
     </div>
   );

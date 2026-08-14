@@ -1,123 +1,157 @@
 import { useState } from "react";
+import Icon from "../ui/Icon";
+import Patente from "../ui/Patente";
+import EstadoChip from "../ui/EstadoChip";
 import "./Buscar.css";
+
+function leerIngresos() {
+  try {
+    const guardado = JSON.parse(localStorage.getItem("ingresos") || "[]");
+    return Array.isArray(guardado) ? guardado : [];
+  } catch {
+    return [];
+  }
+}
 
 function Buscar() {
   const [busqueda, setBusqueda] = useState("");
+  const [ingresos] = useState(leerIngresos);
 
-  const ingresos = JSON.parse(
-    localStorage.getItem("ingresos") || "[]"
-  );
+  const texto = busqueda.trim().toLowerCase();
 
-  const resultados = ingresos.filter((ingreso) => {
-    const texto = busqueda.toLowerCase();
-
-    return (
-      ingreso.patente?.toLowerCase().includes(texto) ||
-      ingreso.cliente?.toLowerCase().includes(texto) ||
-      ingreso.vehiculo?.toLowerCase().includes(texto) ||
-      ingreso.trabajos?.toLowerCase().includes(texto) ||
-      ingreso.motivo?.toLowerCase().includes(texto) ||
-      ingreso.diagnostico?.toLowerCase().includes(texto)
-    );
-  });
-
-  // Función auxiliar para color de etiquetas de estado
-  const getEstadoClass = (estado) => {
-    switch (estado?.toLowerCase()) {
-      case "finalizado":
-      case "entregado":
-        return "badge-verde";
-      case "en reparación":
-        return "badge-azul";
-      case "pendiente":
-        return "badge-naranja";
-      default:
-        return "badge-gris";
-    }
-  };
+  const resultados = texto
+    ? ingresos.filter((ingreso) =>
+        [
+          ingreso.patente,
+          ingreso.cliente,
+          ingreso.vehiculo,
+          ingreso.trabajos,
+          ingreso.motivo,
+          ingreso.diagnostico,
+        ].some((campo) => campo?.toLowerCase().includes(texto))
+      )
+    : [];
 
   return (
-    <div className="buscar-container">
-      {/* CABECERA */}
-      <header className="buscar-header">
-        <h1>🔎 Buscar vehículo o cliente</h1>
-        <p>Filtrá por patente, nombre del cliente, vehículo o detalle del trabajo</p>
+    <div className="buscar">
+      <header className="pantalla-head">
+        <div className="pantalla-head__texto">
+          <span className="eyebrow">Historial completo</span>
+          <h1>Buscar</h1>
+          <p>Por patente, cliente, vehículo o lo que se le hizo al auto.</p>
+        </div>
+
+        {texto && (
+          <div className="pantalla-head__cuenta">
+            <strong>{resultados.length}</strong>
+            {resultados.length === 1 ? "resultado" : "resultados"}
+          </div>
+        )}
       </header>
 
-      {/* CAMPO DE BÚSQUEDA */}
-      <div className="search-box-wrapper">
-        <span className="search-icon">🔍</span>
+      <div className="buscador">
+        <Icon name="buscar" size={20} className="buscador__lupa" />
         <input
-          type="text"
-          className="input-buscar"
-          placeholder="Ej: AA123CD, Juan Pérez, Gol, Cambio de aceite..."
+          type="search"
+          className="buscador__input"
+          placeholder="AA123CD, Juan Pérez, cambio de aceite…"
           value={busqueda}
           onChange={(e) => setBusqueda(e.target.value)}
           autoFocus
+          autoCapitalize="none"
+          spellCheck="false"
         />
         {busqueda && (
-          <button 
-            className="btn-limpiar" 
+          <button
+            type="button"
+            className="btn-icon buscador__limpiar"
             onClick={() => setBusqueda("")}
-            title="Limpiar búsqueda"
+            aria-label="Borrar la búsqueda"
           >
-            ✕
+            <Icon name="cerrar" size={16} />
           </button>
         )}
       </div>
 
-      {/* MENSAJE DE RESULTADOS */}
-      {busqueda && resultados.length === 0 && (
-        <div className="no-resultados">
-          <span>🚫</span>
-          <p>No se encontraron vehículos o trabajos con: <strong>"{busqueda}"</strong></p>
+      {!texto && (
+        <div className="vacio">
+          <span className="vacio__icono">
+            <Icon name="buscar" size={24} />
+          </span>
+          <h3>Escribí algo para empezar</h3>
+          <p>
+            Alcanza con parte de la patente o el nombre del cliente. Hay {ingresos.length}{" "}
+            {ingresos.length === 1 ? "trabajo cerrado" : "trabajos cerrados"} para buscar.
+          </p>
         </div>
       )}
 
-      {!busqueda && (
-        <div className="buscar-placeholder-info">
-          Escribí una patente, cliente o trabajo arriba para comenzar la búsqueda.
+      {texto && resultados.length === 0 && (
+        <div className="vacio">
+          <span className="vacio__icono">
+            <Icon name="bandeja" size={24} />
+          </span>
+          <h3>Sin resultados</h3>
+          <p>
+            Ningún trabajo coincide con “{busqueda.trim()}”. Probá con menos letras o con la
+            patente.
+          </p>
         </div>
       )}
 
-      {/* LISTA DE RESULTADOS */}
-      <div className="resultados-list">
-        {resultados.map((ingreso) => (
-          <div key={ingreso.id} className="card-resultado">
-            <div className="card-header-res">
-              <div className="patente-vehiculo">
-                <span className="patente-badge">{ingreso.patente || "SIN PATENTE"}</span>
-                <h2>{ingreso.vehiculo}</h2>
-              </div>
-              <span className={`estado-badge ${getEstadoClass(ingreso.estado)}`}>
-                {ingreso.estado}
-              </span>
-            </div>
-
-            <div className="card-body-res">
-              <div className="info-item">
-                <span className="info-label">👤 Cliente</span>
-                <span className="info-val">{ingreso.cliente || "-"}</span>
+      {resultados.length > 0 && (
+        <div className="resultados stagger">
+          {resultados.map((ingreso, i) => (
+            <article key={ingreso.id} className="resultado" style={{ "--i": i }}>
+              <div className="resultado__head">
+                <Patente valor={ingreso.patente} />
+                <div className="resultado__id">
+                  <h2>{ingreso.vehiculo || "Vehículo sin cargar"}</h2>
+                  <span className="resultado__cliente">
+                    <Icon name="persona" size={14} />
+                    {ingreso.cliente || "Sin cliente"}
+                  </span>
+                </div>
+                <EstadoChip estado={ingreso.estado} />
               </div>
 
-              <div className="info-item">
-                <span className="info-label">📅 Fecha</span>
-                <span className="info-val">{ingreso.fecha || "-"}</span>
-              </div>
+              <div className="resultado__cuerpo">
+                <div className="dato">
+                  <span className="dato__label">
+                    <Icon name="calendario" size={13} />
+                    Fecha
+                  </span>
+                  <span className="dato__valor num">{ingreso.fecha || "—"}</span>
+                </div>
 
-              <div className="info-item full-width">
-                <span className="info-label">🔧 Motivo del ingreso</span>
-                <p className="info-text">{ingreso.motivo || "-"}</p>
-              </div>
+                <div className="dato">
+                  <span className="dato__label">
+                    <Icon name="casco" size={13} />
+                    Mecánico
+                  </span>
+                  <span className="dato__valor">{ingreso.mecanico || "—"}</span>
+                </div>
 
-              <div className="info-item full-width">
-                <span className="info-label">🛠️ Trabajos realizados</span>
-                <p className="info-text">{ingreso.trabajos || "-"}</p>
+                <div className="dato resultado__ancho">
+                  <span className="dato__label">
+                    <Icon name="llave" size={13} />
+                    Motivo
+                  </span>
+                  <p className="dato__texto">{ingreso.motivo || "—"}</p>
+                </div>
+
+                <div className="dato resultado__ancho">
+                  <span className="dato__label">
+                    <Icon name="tilde" size={13} />
+                    Trabajos realizados
+                  </span>
+                  <p className="dato__texto">{ingreso.trabajos || "—"}</p>
+                </div>
               </div>
-            </div>
-          </div>
-        ))}
-      </div>
+            </article>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

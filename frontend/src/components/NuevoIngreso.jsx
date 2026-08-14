@@ -1,4 +1,7 @@
-import { useState, useEffect } from "react";
+import { useRef, useState } from "react";
+import Icon from "../ui/Icon";
+import Patente from "../ui/Patente";
+import { useToast } from "../ui/useToast";
 import "./NuevoIngreso.css";
 
 const ESTADO_INICIAL = {
@@ -21,64 +24,75 @@ const ESTADO_INICIAL = {
   observaciones: "",
 };
 
+const OBLIGATORIOS = [
+  ["patente", "Patente"],
+  ["cliente", "Cliente"],
+  ["telefono", "Teléfono"],
+  ["vehiculo", "Vehículo"],
+  ["kilometraje", "Kilometraje"],
+  ["fecha", "Fecha"],
+  ["motivo", "Motivo"],
+  ["diagnostico", "Diagnóstico"],
+  ["trabajos", "Trabajos realizados"],
+  ["repuestosTaller", "Repuestos del taller"],
+  ["manoObra", "Mano de obra"],
+  ["totalCobrado", "Total cobrado"],
+  ["mecanico", "Mecánico"],
+  ["estado", "Estado"],
+  ["pendientes", "Pendientes"],
+  ["observaciones", "Observaciones"],
+];
+
+const pesos = new Intl.NumberFormat("es-AR", {
+  style: "currency",
+  currency: "ARS",
+  maximumFractionDigits: 0,
+});
+
 function NuevoIngreso({ onVolver, borrador }) {
   const [datos, setDatos] = useState(borrador || ESTADO_INICIAL);
+  const [faltantes, setFaltantes] = useState([]);
+  const [borradorPrevio, setBorradorPrevio] = useState(borrador);
+  const formRef = useRef(null);
+  const avisar = useToast();
 
-  // Sincronizar si cambia la prop borrador
-  useEffect(() => {
+  // Si cambia el borrador que se está editando, el formulario se rearma.
+  if (borrador !== borradorPrevio) {
+    setBorradorPrevio(borrador);
     setDatos(borrador || ESTADO_INICIAL);
-  }, [borrador]);
+    setFaltantes([]);
+  }
 
   function cambiarDato(e) {
     const { name, value, type, checked } = e.target;
 
-    setDatos({
-      ...datos,
+    setDatos((previos) => ({
+      ...previos,
       [name]: type === "checkbox" ? checked : value,
+    }));
+
+    // El aviso de campo faltante se levanta apenas se empieza a completar
+    if (faltantes.includes(name)) {
+      setFaltantes((previos) => previos.filter((campo) => campo !== name));
+    }
+  }
+
+  function buscarFaltantes() {
+    return OBLIGATORIOS.filter(([campo]) => {
+      const valor = datos[campo];
+      return valor === undefined || valor === null || valor.toString().trim() === "";
     });
   }
 
-  function validarCampos() {
-    // Excluimos repuestosCliente de la validación
-    const camposObligatorios = [
-      ["patente", "Patente"],
-      ["cliente", "Cliente"],
-      ["telefono", "Teléfono"],
-      ["vehiculo", "Vehículo"],
-      ["kilometraje", "Kilometraje"],
-      ["fecha", "Fecha"],
-      ["motivo", "Motivo"],
-      ["diagnostico", "Diagnóstico"],
-      ["trabajos", "Trabajos realizados"],
-      ["repuestosTaller", "Repuestos del taller"],
-      ["manoObra", "Mano de obra"],
-      ["totalCobrado", "Total cobrado"],
-      ["mecanico", "Mecánico"],
-      ["estado", "Estado"],
-      ["pendientes", "Pendientes"],
-      ["observaciones", "Observaciones"],
-    ];
-
-    for (const [campo, nombre] of camposObligatorios) {
-      const valor = datos[campo];
-      if (valor === undefined || valor === null || valor.toString().trim() === "") {
-        alert(`Falta completar: ${nombre}`);
-        return false;
-      }
-    }
-
-    return true;
-  }
-
   function guardarBorrador() {
-    if (!datos.patente.trim() && !datos.cliente.trim()) {
-      alert("Ingresa al menos la patente o el cliente para guardar un borrador.");
+    if (!(datos.patente || "").trim() && !(datos.cliente || "").trim()) {
+      setFaltantes(["patente", "cliente"]);
+      avisar("Cargá al menos la patente o el cliente para guardar", "error");
+      formRef.current?.elements.patente?.focus();
       return;
     }
 
-    const borradores = JSON.parse(
-      localStorage.getItem("borradores") || "[]"
-    );
+    const borradores = JSON.parse(localStorage.getItem("borradores") || "[]");
 
     const nuevoBorrador = {
       id: borrador?.id || Date.now(),
@@ -91,18 +105,33 @@ function NuevoIngreso({ onVolver, borrador }) {
 
     localStorage.setItem("borradores", JSON.stringify(actualizados));
 
-    alert("Borrador guardado correctamente");
+    avisar("Ingreso guardado en el taller", "ok");
     onVolver();
   }
 
   function finalizarIngreso(e) {
     e.preventDefault();
 
-    if (!validarCampos()) return;
+    const pendientes = buscarFaltantes();
 
-    const ingresos = JSON.parse(
-      localStorage.getItem("ingresos") || "[]"
-    );
+    if (pendientes.length > 0) {
+      const claves = pendientes.map(([campo]) => campo);
+      setFaltantes(claves);
+
+      avisar(
+        pendientes.length === 1
+          ? `Falta completar: ${pendientes[0][1]}`
+          : `Faltan ${pendientes.length} campos por completar`,
+        "error"
+      );
+
+      const primero = formRef.current?.elements[claves[0]];
+      primero?.focus();
+      primero?.scrollIntoView({ block: "center", behavior: "smooth" });
+      return;
+    }
+
+    const ingresos = JSON.parse(localStorage.getItem("ingresos") || "[]");
 
     ingresos.push({
       id: Date.now(),
@@ -113,45 +142,65 @@ function NuevoIngreso({ onVolver, borrador }) {
     localStorage.setItem("ingresos", JSON.stringify(ingresos));
 
     if (borrador) {
-      const borradores = JSON.parse(
-        localStorage.getItem("borradores") || "[]"
-      );
-
+      const borradores = JSON.parse(localStorage.getItem("borradores") || "[]");
       const actualizados = borradores.filter((b) => b.id !== borrador.id);
-
       localStorage.setItem("borradores", JSON.stringify(actualizados));
     }
 
-    alert("Ingreso finalizado correctamente");
+    avisar("Ingreso finalizado y guardado en el historial", "ok");
     onVolver();
   }
 
+  const claseCampo = (campo) => `campo ${faltantes.includes(campo) ? "campo--error" : ""}`.trim();
+
+  const sumaCostos =
+    (Number(datos.repuestosTaller) || 0) + (Number(datos.manoObra) || 0);
+
   return (
-    <div className="ingreso-container">
-      {/* CABECERA CON BOTÓN DE VOLVER */}
-      <header className="ingreso-header">
-        <h1>🚗 {borrador ? "Continuar ingreso" : "Nuevo ingreso"}</h1>
-        
+    <div className="ingreso">
+      {/* La chapa se arma sola mientras se escribe la patente */}
+      <header className="ingreso__head">
+        <Patente valor={datos.patente} tamano="lg" />
+
+        <div className="ingreso__head-texto">
+          <span className="eyebrow">{borrador ? "Ingreso empezado" : "Alta de vehículo"}</span>
+          <h1>{borrador ? "Continuar ingreso" : "Nuevo ingreso"}</h1>
+          <p>
+            {datos.vehiculo?.trim() || "Cargá los datos del vehículo y del trabajo realizado."}
+          </p>
+        </div>
       </header>
 
-      <form onSubmit={finalizarIngreso} className="ingreso-form">
-        {/* BLOQUE 1: DATOS DEL VEHÍCULO Y CLIENTE */}
-        <div className="card-seccion">
-          <h2>🚗 Datos del vehículo y cliente</h2>
-          <div className="grid-form-2">
-            <div className="field-group">
-              <label>Patente *</label>
+      <form onSubmit={finalizarIngreso} className="ingreso__form" ref={formRef} noValidate>
+        {/* 01 — VEHÍCULO Y CLIENTE */}
+        <section className="seccion">
+          <div className="seccion__head">
+            <span className="seccion__num">01</span>
+            <h2>Vehículo y cliente</h2>
+          </div>
+
+          <div className="rejilla-2">
+            <div className={claseCampo("patente")}>
+              <label htmlFor="patente">
+                Patente <span className="campo__req">*</span>
+              </label>
               <input
+                id="patente"
                 name="patente"
-                placeholder="Ej: AA123CD"
+                placeholder="AA123CD"
                 value={datos.patente}
                 onChange={cambiarDato}
+                autoCapitalize="characters"
+                spellCheck="false"
               />
             </div>
 
-            <div className="field-group">
-              <label>Cliente *</label>
+            <div className={claseCampo("cliente")}>
+              <label htmlFor="cliente">
+                Cliente <span className="campo__req">*</span>
+              </label>
               <input
+                id="cliente"
                 name="cliente"
                 placeholder="Nombre y apellido"
                 value={datos.cliente}
@@ -159,40 +208,55 @@ function NuevoIngreso({ onVolver, borrador }) {
               />
             </div>
 
-            <div className="field-group">
-              <label>Teléfono *</label>
+            <div className={claseCampo("telefono")}>
+              <label htmlFor="telefono">
+                Teléfono <span className="campo__req">*</span>
+              </label>
               <input
+                id="telefono"
                 name="telefono"
-                placeholder="Ej: 11 1234 5678"
+                type="tel"
+                inputMode="tel"
+                placeholder="11 1234 5678"
                 value={datos.telefono}
                 onChange={cambiarDato}
               />
             </div>
 
-            <div className="field-group">
-              <label>Vehículo *</label>
+            <div className={claseCampo("vehiculo")}>
+              <label htmlFor="vehiculo">
+                Vehículo <span className="campo__req">*</span>
+              </label>
               <input
+                id="vehiculo"
                 name="vehiculo"
-                placeholder="Marca, modelo, versión"
+                placeholder="Marca, modelo y versión"
                 value={datos.vehiculo}
                 onChange={cambiarDato}
               />
             </div>
 
-            <div className="field-group">
-              <label>Kilometraje *</label>
+            <div className={claseCampo("kilometraje")}>
+              <label htmlFor="kilometraje">
+                Kilometraje <span className="campo__req">*</span>
+              </label>
               <input
+                id="kilometraje"
                 name="kilometraje"
                 type="number"
-                placeholder="Ej: 120000"
+                inputMode="numeric"
+                placeholder="120000"
                 value={datos.kilometraje}
                 onChange={cambiarDato}
               />
             </div>
 
-            <div className="field-group">
-              <label>Fecha de ingreso *</label>
+            <div className={claseCampo("fecha")}>
+              <label htmlFor="fecha">
+                Fecha de ingreso <span className="campo__req">*</span>
+              </label>
               <input
+                id="fecha"
                 name="fecha"
                 type="date"
                 value={datos.fecha}
@@ -200,125 +264,163 @@ function NuevoIngreso({ onVolver, borrador }) {
               />
             </div>
           </div>
-        </div>
+        </section>
 
-        {/* BLOQUE 2: PROBLEMA Y TRABAJOS */}
-        <div className="card-seccion">
-          <h2>🔧 Problema y Trabajos</h2>
-          <div className="grid-form-1">
-            <div className="field-group">
-              <label>Motivo del ingreso *</label>
+        {/* 02 — PROBLEMA Y TRABAJOS */}
+        <section className="seccion">
+          <div className="seccion__head">
+            <span className="seccion__num">02</span>
+            <h2>Problema y trabajos</h2>
+          </div>
+
+          <div className="rejilla-1">
+            <div className={claseCampo("motivo")}>
+              <label htmlFor="motivo">
+                Motivo del ingreso <span className="campo__req">*</span>
+              </label>
               <textarea
+                id="motivo"
                 name="motivo"
                 rows="2"
-                placeholder="Detalla el motivo *"
+                placeholder="Qué dijo el cliente que le pasa al auto"
                 value={datos.motivo}
                 onChange={cambiarDato}
               />
             </div>
 
-            <div className="field-group">
-              <label>Diagnóstico *</label>
+            <div className={claseCampo("diagnostico")}>
+              <label htmlFor="diagnostico">
+                Diagnóstico <span className="campo__req">*</span>
+              </label>
               <textarea
+                id="diagnostico"
                 name="diagnostico"
                 rows="2"
-                placeholder="Diagnóstico inicial *"
+                placeholder="Qué se encontró al revisarlo"
                 value={datos.diagnostico}
                 onChange={cambiarDato}
               />
             </div>
 
-            <div className="field-group">
-              <label>Trabajos realizados *</label>
+            <div className={claseCampo("trabajos")}>
+              <label htmlFor="trabajos">
+                Trabajos realizados <span className="campo__req">*</span>
+              </label>
               <textarea
+                id="trabajos"
                 name="trabajos"
                 rows="3"
-                placeholder="Detalle de trabajos realizados *"
+                placeholder="Detalle de lo que se hizo"
                 value={datos.trabajos}
                 onChange={cambiarDato}
               />
             </div>
           </div>
-        </div>
+        </section>
 
-        {/* BLOQUE 3: REPUESTOS Y COSTOS */}
-        <div className="card-seccion">
-          <h2>💰 Repuestos y Costos</h2>
-          <div className="grid-form-2">
-            <div className="field-group">
-              <label>Repuestos del taller ($) *</label>
+        {/* 03 — REPUESTOS Y COSTOS */}
+        <section className="seccion">
+          <div className="seccion__head">
+            <span className="seccion__num">03</span>
+            <h2>Repuestos y costos</h2>
+          </div>
+
+          <div className="rejilla-2">
+            <div className={claseCampo("repuestosTaller")}>
+              <label htmlFor="repuestosTaller">
+                Repuestos del taller <span className="campo__req">*</span>
+              </label>
               <input
+                id="repuestosTaller"
                 name="repuestosTaller"
                 type="number"
+                inputMode="numeric"
                 placeholder="0"
                 value={datos.repuestosTaller}
                 onChange={cambiarDato}
               />
             </div>
 
-            <div className="field-group">
-              <label>Mano de obra ($) *</label>
+            <div className={claseCampo("manoObra")}>
+              <label htmlFor="manoObra">
+                Mano de obra <span className="campo__req">*</span>
+              </label>
               <input
+                id="manoObra"
                 name="manoObra"
                 type="number"
+                inputMode="numeric"
                 placeholder="0"
                 value={datos.manoObra}
                 onChange={cambiarDato}
               />
             </div>
 
-            <div className="field-group col-span-2">
-              <label>Total cobrado ($) *</label>
-              <input
-                name="totalCobrado"
-                type="number"
-                className="input-destacado"
-                placeholder="0"
-                value={datos.totalCobrado}
-                onChange={cambiarDato}
-              />
-            </div>
-
-            <div className="checkbox-container col-span-2">
-              <input
-                id="repuestosCliente"
-                name="repuestosCliente"
-                type="checkbox"
-                checked={datos.repuestosCliente}
-                onChange={cambiarDato}
-              />
-              <label htmlFor="repuestosCliente">
-                Repuestos aportados por el cliente
+            <div className="ancho-2">
+              <label className="check">
+                <input
+                  name="repuestosCliente"
+                  type="checkbox"
+                  checked={datos.repuestosCliente}
+                  onChange={cambiarDato}
+                />
+                <span>Los repuestos los puso el cliente</span>
               </label>
             </div>
-          </div>
-        </div>
 
-        {/* BLOQUE 4: MECÁNICO, ESTADO Y NOTAS */}
-        <div className="card-seccion">
-          <h2>👨‍🔧 Mecánico y Estado</h2>
-          <div className="grid-form-2">
-            <div className="field-group">
-              <label>Mecánico a cargo *</label>
-              <select
-                name="mecanico"
-                value={datos.mecanico}
-                onChange={cambiarDato}
-              >
-                <option value="">Seleccionar mecánico *</option>
+            {/* El total va aparte: es el número que se cobra */}
+            <div className={`${claseCampo("totalCobrado")} ancho-2 total`}>
+              <label htmlFor="totalCobrado">
+                Total cobrado <span className="campo__req">*</span>
+              </label>
+              <div className="total__campo">
+                <span className="total__signo" aria-hidden="true">
+                  $
+                </span>
+                <input
+                  id="totalCobrado"
+                  name="totalCobrado"
+                  type="number"
+                  inputMode="numeric"
+                  placeholder="0"
+                  value={datos.totalCobrado}
+                  onChange={cambiarDato}
+                />
+              </div>
+              {sumaCostos > 0 && (
+                <span className="total__ayuda num">
+                  Repuestos + mano de obra: {pesos.format(sumaCostos)}
+                </span>
+              )}
+            </div>
+          </div>
+        </section>
+
+        {/* 04 — CIERRE */}
+        <section className="seccion">
+          <div className="seccion__head">
+            <span className="seccion__num">04</span>
+            <h2>Cierre del trabajo</h2>
+          </div>
+
+          <div className="rejilla-2">
+            <div className={claseCampo("mecanico")}>
+              <label htmlFor="mecanico">
+                Mecánico a cargo <span className="campo__req">*</span>
+              </label>
+              <select id="mecanico" name="mecanico" value={datos.mecanico} onChange={cambiarDato}>
+                <option value="">Elegir mecánico</option>
                 <option value="Román Federice">Román Federice</option>
                 <option value="Gonzalo Federice">Gonzalo Federice</option>
                 <option value="Juan Mecánico">Juan Mecánico</option>
               </select>
             </div>
 
-            <div className="field-group">
-              <label>Estado *</label>
-              <select
-                name="estado"
-                value={datos.estado}
-                onChange={cambiarDato}
-              >
+            <div className={claseCampo("estado")}>
+              <label htmlFor="estado">
+                Estado <span className="campo__req">*</span>
+              </label>
+              <select id="estado" name="estado" value={datos.estado} onChange={cambiarDato}>
                 <option>Pendiente</option>
                 <option>En reparación</option>
                 <option>Finalizado</option>
@@ -326,39 +428,54 @@ function NuevoIngreso({ onVolver, borrador }) {
               </select>
             </div>
 
-            <div className="field-group col-span-2">
-              <label>Trabajos pendientes *</label>
+            <div className={`${claseCampo("pendientes")} ancho-2`}>
+              <label htmlFor="pendientes">
+                Trabajos pendientes <span className="campo__req">*</span>
+              </label>
               <textarea
+                id="pendientes"
                 name="pendientes"
                 rows="2"
-                placeholder="Trabajos pendientes *"
+                placeholder="Qué queda por hacer. Si no queda nada, escribí “ninguno”."
                 value={datos.pendientes}
                 onChange={cambiarDato}
               />
             </div>
 
-            <div className="field-group col-span-2">
-              <label>Observaciones *</label>
+            <div className={`${claseCampo("observaciones")} ancho-2`}>
+              <label htmlFor="observaciones">
+                Observaciones <span className="campo__req">*</span>
+              </label>
               <textarea
+                id="observaciones"
                 name="observaciones"
                 rows="2"
-                placeholder="Observaciones *"
+                placeholder="Notas para el próximo ingreso"
                 value={datos.observaciones}
                 onChange={cambiarDato}
               />
             </div>
           </div>
-        </div>
+        </section>
 
-        {/* BARRA DE ACCIONES */}
-        <div className="acciones-bar">
-          <button type="button" className="btn btn-borrador" onClick={guardarBorrador}>
-            💾 Guardar borrador
-          </button>
+        {/* Barra de acciones: acompaña al scroll */}
+        <div className="acciones">
+          <p className="acciones__nota">
+            <Icon name="alerta" size={15} />
+            Guardar deja el auto en el taller. Finalizar lo manda al historial.
+          </p>
 
-          <button type="submit" className="btn btn-finalizar">
-            ✅ Finalizar ingreso
-          </button>
+          <div className="acciones__botones">
+            <button type="button" className="btn btn--outline" onClick={guardarBorrador}>
+              <Icon name="guardar" size={18} />
+              Guardar
+            </button>
+
+            <button type="submit" className="btn btn--solid">
+              <Icon name="tilde" size={18} />
+              Finalizar ingreso
+            </button>
+          </div>
         </div>
       </form>
     </div>

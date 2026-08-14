@@ -1,195 +1,236 @@
-/* --- ESTILOS GENERALES DEL PANEL --- */
-.ingreso-container {
-  max-width: 850px;
-  margin: 20px auto;
-  padding: 0 16px;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  color: #1e293b;
-}
+/* ============================================================
+   Nuevo ingreso
+   ============================================================ */
 
-.ingreso-header {
+.ingreso {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.ingreso__head {
+  display: flex;
   align-items: center;
-  margin-bottom: 20px;
+  gap: 20px;
 }
 
-.ingreso-header h1 {
-  font-size: 1.6rem;
-  margin: 0;
-  color: #0f172a;
-  font-weight: 700;
+.ingreso__head-texto {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
 }
 
-/* --- TARJETAS POR SECCIÓN --- */
-.card-seccion {
-  background-color: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
+.ingreso__head-texto h1 {
+  font-size: clamp(1.7rem, 1.3rem + 1.6vw, 2.2rem);
+}
+
+.ingreso__head-texto p {
+  font-size: 0.9rem;
+  color: var(--ink-3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 560px) {
+  .ingreso__head {
+    gap: 14px;
+  }
+
+  .ingreso__head .patente--lg {
+    min-width: 108px;
+  }
+
+  .ingreso__head .patente--lg .patente__texto {
+    padding: 4px 10px 6px;
+    font-size: 1.25rem;
+  }
+}
+
+/* ------------------------------------------------------------
+   Secciones numeradas — la carga es una secuencia real
+   ------------------------------------------------------------ */
+
+.ingreso__form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.seccion {
   padding: 20px;
-  margin-bottom: 20px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-1);
 }
 
-.card-seccion h2 {
-  font-size: 1.1rem;
-  margin-top: 0;
-  margin-bottom: 16px;
-  color: #1e3a8a;
-  border-bottom: 2px solid #f1f5f9;
-  padding-bottom: 8px;
+.seccion__head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 14px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid var(--line);
 }
 
-/* --- GRIDS Y DISPOSICIÓN --- */
-.grid-form-2 {
+.seccion__num {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  flex: none;
+  border-radius: var(--r-sm);
+  background: var(--ink);
+  color: var(--ink-inv);
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+}
+
+.seccion h2 {
+  font-size: 1.25rem;
+}
+
+.rejilla-2 {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 16px;
 }
 
-.grid-form-1 {
+.rejilla-1 {
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-.col-span-2 {
+.ancho-2 {
   grid-column: span 2;
 }
 
-/* Respeta pantallas pequeñas/celulares */
 @media (max-width: 640px) {
-  .grid-form-2 {
+  .rejilla-2 {
     grid-template-columns: 1fr;
   }
-  .col-span-2 {
+
+  .ancho-2 {
     grid-column: span 1;
+  }
+
+  .seccion {
+    padding: 18px 16px;
   }
 }
 
-/* --- CAMPOS DE ENTRADA --- */
-.field-group {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+/* ------------------------------------------------------------
+   Total cobrado — el dato que se cobra, tratado como tal
+   ------------------------------------------------------------ */
+
+.total__campo {
+  position: relative;
 }
 
-.field-group label {
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: #475569;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-}
-
-.field-group input,
-.field-group select,
-.field-group textarea {
-  padding: 10px 12px;
-  border: 1px solid #cbd5e1;
-  border-radius: 6px;
-  font-size: 0.95rem;
-  background-color: #f8fafc;
-  color: #0f172a;
-  outline: none;
-  transition: all 0.2s ease;
-}
-
-.field-group input:focus,
-.field-group select:focus,
-.field-group textarea:focus {
-  border-color: #2563eb;
-  background-color: #ffffff;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
-}
-
-/* Destacado especial para el Total Cobrado */
-.input-destacado {
-  font-size: 1.1rem !important;
+.total__signo {
+  position: absolute;
+  top: 50%;
+  left: 15px;
+  transform: translateY(-50%);
+  font-family: var(--font-display);
+  font-size: 1.35rem;
   font-weight: 700;
-  color: #166534 !important;
-  background-color: #f0fdf4 !important;
-  border-color: #86efac !important;
+  color: var(--ink-3);
+  pointer-events: none;
 }
 
-/* Checkbox */
-.checkbox-container {
+.total__campo input {
+  min-height: 58px;
+  padding-left: 34px;
+  font-family: var(--font-display);
+  font-size: 1.7rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: var(--ink);
+  background: var(--surface-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.total__ayuda {
+  font-size: 0.8rem;
+  color: var(--ink-3);
+}
+
+/* Se ocultan las flechitas de los number: molestan al tocar con el dedo */
+.ingreso input[type="number"]::-webkit-outer-spin-button,
+.ingreso input[type="number"]::-webkit-inner-spin-button {
+  appearance: none;
+  margin: 0;
+}
+
+.ingreso input[type="number"] {
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+/* ------------------------------------------------------------
+   Barra de acciones
+   ------------------------------------------------------------ */
+
+.acciones {
+  position: sticky;
+  bottom: 0;
+  z-index: 20;
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding-top: 6px;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+  padding: 14px 18px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  backdrop-filter: saturate(180%) blur(12px);
+  box-shadow: var(--shadow-2);
 }
 
-.checkbox-container input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
-  accent-color: #2563eb;
-  cursor: pointer;
-}
-
-.checkbox-container label {
-  font-size: 0.95rem;
-  cursor: pointer;
-  color: #334155;
-  font-weight: 500;
-}
-
-/* --- BOTONES DE ACCIÓN --- */
-.acciones-bar {
+.acciones__nota {
   display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  margin-top: 10px;
-  margin-bottom: 40px;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+  color: var(--ink-3);
 }
 
-.btn {
-  padding: 12px 20px;
-  font-size: 0.95rem;
-  font-weight: 600;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.1s;
+.acciones__nota svg {
+  flex: none;
+  color: var(--accent);
 }
 
-.btn:active {
-  transform: scale(0.98);
+.acciones__botones {
+  display: flex;
+  gap: 10px;
+  margin-left: auto;
 }
 
-.btn-volver {
-  background-color: #e2e8f0;
-  color: #334155;
-}
+@media (max-width: 640px) {
+  .acciones {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
 
-.btn-volver:hover {
-  background-color: #cbd5e1;
-}
+  .acciones__nota {
+    order: 2;
+  }
 
-.btn-borrador {
-  background-color: #d97706;
-  color: #ffffff;
-}
+  .acciones__botones {
+    margin-left: 0;
+  }
 
-.btn-borrador:hover {
-  background-color: #b45309;
-}
-
-.btn-finalizar {
-  background-color: #16a34a;
-  color: #ffffff;
-}
-
-.btn-finalizar:hover {
-  background-color: #15803d;
-}
-/* --- ESTILO PARA LOS PLACEHOLDERS (TEXTO DE AYUDA) --- */
-.field-group input::placeholder,
-.field-group select::placeholder,
-.field-group textarea::placeholder {
-  font-family: 'Inter', Roboto, sans-serif; 
-  font-size: 0.9rem;                         
-  font-style: italic;                        
-  color: #022e6b;                            
-  opacity: 1; 
+  .acciones__botones .btn {
+    flex: 1;
+  }
 }

@@ -1,117 +1,315 @@
-/* --- CONTENEDOR PRINCIPAL DEL INICIO --- */
-.inicio-container {
-  max-width: 800px;
-  margin: 40px auto;
-  padding: 0 20px;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  text-align: center;
+/* ============================================================
+   Panel del taller
+   ============================================================ */
+
+.inicio {
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
 }
 
-/* --- ENCABEZADO Y LOGO --- */
-.inicio-header {
-  margin-bottom: 36px;
+.inicio__head {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.logo-badge {
-  font-size: 2.5rem;
-  background-color: #1e293b;
-  width: 70px;
-  height: 70px;
-  line-height: 70px;
-  border-radius: 50%;
-  margin: 0 auto 12px auto;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+.inicio__head .eyebrow::first-letter {
+  text-transform: uppercase;
 }
 
-.inicio-header h1 {
-  font-size: 2.2rem;
-  color: #517de6;
-  margin: 0 0 6px 0;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-}
+/* ------------------------------------------------------------
+   Cifras del taller
+   ------------------------------------------------------------ */
 
-.inicio-header p {
-  font-size: 1rem;
-  color: #64748b;
-  margin: 0;
-}
-
-/* --- GRID DE BOTONES / TARJETAS --- */
-.menu-grid {
+.inicio__cifras {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 18px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
 }
 
-/* Adaptación para pantallas chicas o celulares */
-@media (max-width: 600px) {
-  .menu-grid {
-    grid-template-columns: 1fr;
+.cifra {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px 18px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-1);
+  text-align: left;
+  animation: bm-rise var(--dur) var(--ease-out) backwards;
+}
+
+.inicio__cifras > *:nth-child(2) {
+  animation-delay: 50ms;
+}
+
+.inicio__cifras > *:nth-child(3) {
+  animation-delay: 100ms;
+}
+
+.cifra__label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.cifra__valor {
+  font-family: var(--font-display);
+  font-size: 2.4rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--ink);
+}
+
+.cifra__valor--monto {
+  font-size: 1.75rem;
+  letter-spacing: -0.01em;
+}
+
+.cifra__pie {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.78rem;
+  color: var(--ink-3);
+}
+
+/* La cifra de autos en el taller es además el atajo a esa pantalla */
+.cifra--activa {
+  cursor: pointer;
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+  transition:
+    border-color var(--dur-fast) ease,
+    box-shadow var(--dur-fast) ease,
+    transform var(--dur-press) var(--ease-out);
+}
+
+.cifra--activa .cifra__valor,
+.cifra--activa .cifra__label {
+  color: var(--accent-ink);
+}
+
+.cifra--activa .cifra__pie {
+  color: var(--accent-ink);
+  opacity: 0.85;
+}
+
+.cifra--activa svg {
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .cifra--activa:hover {
+    border-color: var(--accent);
+    box-shadow: var(--shadow-2);
+  }
+
+  .cifra--activa:hover svg {
+    transform: translateX(3px);
   }
 }
 
-/* --- ESTILO DE LAS TARJETAS --- */
-.card-btn {
+.cifra--activa:active {
+  transform: scale(0.985);
+}
+
+@media (max-width: 720px) {
+  .inicio__cifras {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  /* El monto se lleva el ancho completo: es el número más largo */
+  .inicio__cifras > *:nth-child(3) {
+    grid-column: span 2;
+  }
+
+  .cifra__valor {
+    font-size: 2rem;
+  }
+}
+
+/* ------------------------------------------------------------
+   Acciones (bento)
+   ------------------------------------------------------------ */
+
+.inicio__acciones {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+
+.tile {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 15px;
   padding: 20px;
-  background-color: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  cursor: pointer;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-1);
   text-align: left;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+  color: var(--ink);
+  overflow: hidden;
+  animation: bm-rise var(--dur) var(--ease-out) backwards;
+  transition:
+    border-color var(--dur-fast) ease,
+    box-shadow var(--dur-fast) ease,
+    transform var(--dur-fast) var(--ease-out);
 }
 
-.card-btn:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
-  border-color: #cbd5e1;
+.inicio__acciones > *:nth-child(1) {
+  animation-delay: 80ms;
+}
+.inicio__acciones > *:nth-child(2) {
+  animation-delay: 125ms;
+}
+.inicio__acciones > *:nth-child(3) {
+  animation-delay: 170ms;
+}
+.inicio__acciones > *:nth-child(4) {
+  animation-delay: 215ms;
 }
 
-.card-btn:active {
-  transform: translateY(0);
+.tile__icono {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  flex: none;
+  border-radius: var(--r);
+  background: var(--surface-3);
+  color: var(--ink-2);
+  transition:
+    background-color var(--dur-fast) ease,
+    color var(--dur-fast) ease;
 }
 
-.card-icon {
-  font-size: 2rem;
-  background-color: #f1f5f9;
-  padding: 12px;
-  border-radius: 10px;
+.tile__texto {
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
 }
 
-.card-info h3 {
-  margin: 0 0 4px 0;
-  font-size: 1.1rem;
-  color: #1e293b;
+.tile__titulo {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
   font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
 }
 
-.card-info p {
-  margin: 0;
+.tile__desc {
   font-size: 0.85rem;
-  color: #64748b;
+  color: var(--ink-3);
 }
 
-/* --- DETALLES DE COLOR POR ACCIÓN --- */
-.card-nuevo:hover .card-icon {
-  background-color: #dcfce7;
+.tile__flecha {
+  margin-left: auto;
+  flex: none;
+  color: var(--ink-3);
+  transition: transform var(--dur-fast) var(--ease-out);
 }
 
-.card-buscar:hover .card-icon {
-  background-color: #e0f2fe;
+.tile__contador {
+  margin-left: auto;
+  flex: none;
+  min-width: 28px;
+  padding: 3px 8px;
+  border-radius: var(--r-pill);
+  background: var(--accent);
+  color: var(--on-accent);
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-align: center;
 }
 
-.card-historial:hover .card-icon {
-  background-color: #fef3c7;
+@media (hover: hover) and (pointer: fine) {
+  .tile:hover {
+    transform: translateY(var(--lift));
+    border-color: var(--line-strong);
+    box-shadow: var(--shadow-2);
+  }
+
+  .tile:hover .tile__icono {
+    background: var(--accent-soft);
+    color: var(--accent-ink);
+  }
+
+  .tile:hover .tile__flecha {
+    transform: translateX(4px);
+  }
 }
 
-.card-pendientes:hover .card-icon {
-  background-color: #ffedd5;
+.tile:active {
+  transform: scale(0.99);
+}
+
+/* Acción principal: ocupa las dos columnas y es la única en grafito */
+.tile--destacado {
+  grid-column: span 2;
+  padding: 26px 24px;
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--ink-inv);
+}
+
+.tile--destacado .tile__icono {
+  width: 50px;
+  height: 50px;
+  background: var(--accent-inv);
+  color: var(--ink);
+}
+
+.tile--destacado .tile__titulo {
+  font-size: 1.7rem;
+}
+
+.tile--destacado .tile__desc {
+  color: color-mix(in srgb, var(--ink-inv) 62%, transparent);
+}
+
+.tile--destacado .tile__flecha {
+  color: var(--accent-inv);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .tile--destacado:hover {
+    border-color: var(--accent-inv);
+  }
+
+  .tile--destacado:hover .tile__icono {
+    background: var(--accent);
+    color: var(--on-accent);
+  }
+}
+
+.tile--ancho {
+  grid-column: span 2;
+}
+
+@media (max-width: 640px) {
+  .inicio__acciones {
+    grid-template-columns: 1fr;
+  }
+
+  .tile--destacado,
+  .tile--ancho {
+    grid-column: span 1;
+  }
+
+  .tile--destacado {
+    padding: 22px 20px;
+  }
+
+  .tile--destacado .tile__titulo {
+    font-size: 1.5rem;
+  }
 }

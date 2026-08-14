@@ -1,142 +1,104 @@
-/* --- CONTENEDOR PRINCIPAL --- */
-.pendientes-container {
-  max-width: 850px;
-  margin: 30px auto;
-  padding: 0 16px;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  color: #1e293b;
-}
+/* ============================================================
+   En el taller (ingresos sin cerrar)
+   ============================================================ */
 
-.pendientes-header {
-  margin-bottom: 24px;
-}
-
-.pendientes-header h1 {
-  font-size: 1.8rem;
-  color: #0f172a;
-  margin: 0 0 6px 0;
-  font-weight: 800;
-}
-
-.pendientes-header p {
-  font-size: 0.95rem;
-  color: #64748b;
-  margin: 0;
-}
-
-/* --- MENSAJE VACÍO --- */
-.no-pendientes {
-  text-align: center;
-  padding: 40px 20px;
-  background-color: #f8fafc;
-  border: 1px dashed #cbd5e1;
-  border-radius: 12px;
-  color: #64748b;
-}
-
-.no-pendientes span {
-  font-size: 2.5rem;
-  display: block;
-  margin-bottom: 10px;
-}
-
-/* --- GRID DE CARDS --- */
-.pendientes-grid {
+.pendientes__grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 18px;
+  grid-template-columns: repeat(auto-fill, minmax(268px, 1fr));
+  gap: 14px;
 }
 
-.card-pendiente {
-  background-color: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  padding: 18px;
+.pendiente {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-1);
+  transition:
+    border-color var(--dur-fast) ease,
+    box-shadow var(--dur-fast) ease,
+    transform var(--dur-fast) var(--ease-out);
 }
 
-.card-pendiente:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+/* Filo ámbar: marca que el auto sigue adentro */
+.pendiente::before {
+  content: "";
+  display: block;
+  width: 34px;
+  height: 3px;
+  margin-bottom: 14px;
+  border-radius: var(--r-pill);
+  background: var(--accent);
 }
 
-.card-pendiente-header {
+@media (hover: hover) and (pointer: fine) {
+  .pendiente:hover {
+    transform: translateY(var(--lift));
+    border-color: var(--line-strong);
+    box-shadow: var(--shadow-2);
+  }
+}
+
+.pendiente__head {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 14px;
 }
 
-.patente-tag {
-  background-color: #1e293b;
-  color: #ffffff;
-  padding: 4px 10px;
-  border-radius: 6px;
-  font-weight: 800;
-  font-size: 0.85rem;
-  letter-spacing: 0.05em;
+.pendiente__cuerpo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
 }
 
-.estado-badge-pendiente {
-  background-color: #fef3c7;
-  color: #d97706;
-  font-size: 0.75rem;
-  font-weight: 700;
-  padding: 4px 8px;
-  border-radius: 12px;
+.pendiente__cuerpo h2 {
+  font-size: 1.2rem;
+  margin-bottom: 2px;
 }
 
-.card-pendiente-body h3 {
-  margin: 0 0 8px 0;
-  font-size: 1.1rem;
-  color: #0f172a;
-}
-
-.card-pendiente-body p {
-  margin: 4px 0;
-  font-size: 0.9rem;
-  color: #475569;
-}
-
-.motivo-corte {
-  font-style: italic;
-  color: #64748b !important;
-}
-
-.card-pendiente-footer {
-  margin-top: 16px;
-  padding-top: 12px;
-  border-top: 1px solid #f1f5f9;
-}
-
-/* --- BOTÓN CONTINUAR INGRESO (NUEVO ESTILO ELEGANTE) --- */
-.btn-continuar {
-  width: 100%;
-  padding: 10px 14px;
-  background-color: transparent;
-  color: #2563eb;
-  border: 1.5px solid #2563eb;
-  border-radius: 8px;
-  font-weight: 600;
+.pendiente__linea {
+  display: flex;
+  align-items: center;
+  gap: 7px;
   font-size: 0.88rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  transition: all 0.2s ease-in-out;
+  color: var(--ink-2);
 }
 
-.btn-continuar:hover {
-  background-color: #2563eb;
-  color: #ffffff;
-  box-shadow: 0 4px 8px rgba(37, 99, 235, 0.2);
+.pendiente__linea svg {
+  flex: none;
+  color: var(--ink-3);
 }
 
-.btn-continuar:active {
-  transform: scale(0.98);
+.pendiente__motivo {
+  margin-top: 6px;
+  padding: 9px 11px;
+  border-left: 2px solid var(--line-strong);
+  border-radius: var(--r-sm);
+  background: var(--surface-2);
+  font-size: 0.86rem;
+  line-height: 1.45;
+  color: var(--ink-3);
+
+  /* Dos líneas alcanzan para reconocer el trabajo */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.pendiente__accion {
+  margin-top: 16px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .pendiente:hover .pendiente__accion {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
 }

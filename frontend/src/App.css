@@ -1,74 +1,193 @@
-/* --- ESTRUCTURA GENERAL --- */
-.app-main-container {
-  min-height: 100vh;
+/* ============================================================
+   Estructura de la app: franja industrial, barra superior y
+   contenedor de pantallas.
+   ============================================================ */
+
+.app {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  min-height: 100svh;
 }
 
-.app-content {
-  flex: 1;
-  padding-bottom: 20px;
+/* Franja de peligro: el único adorno de la app. Vocabulario de taller. */
+.franja {
+  height: 4px;
+  flex: none;
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--accent) 0 10px,
+    var(--ink) 10px 20px
+  );
 }
 
-/* --- BARRA SUPERIOR (TOP NAVBAR) --- */
-.top-navbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 24px;
-  background-color: #ffffff;
-  border-bottom: 1px solid #e2e8f0;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+/* ------------------------------------------------------------
+   Barra superior
+   ------------------------------------------------------------ */
+
+.topbar {
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: 50;
+  flex: none;
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  backdrop-filter: saturate(180%) blur(12px);
+  border-bottom: 1px solid var(--line);
 }
 
-.btn-volver-top {
-  background-color: #f1f5f9;
-  color: #334155;
-  border: 1px solid #cbd5e1;
-  padding: 8px 14px;
-  border-radius: 6px;
-  font-size: 0.88rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.btn-volver-top:hover {
-  background-color: #e2e8f0;
-  color: #0f172a;
-}
-
-.navbar-brand {
-  font-weight: 700;
-  color: #64748b;
-  font-size: 0.9rem;
-}
-
-/* --- BARRA INFERIOR (CERRAR SESIÓN) --- */
-.barra-inferior {
+.topbar__inner {
   display: flex;
-  justify-content: center;
-  padding: 14px;
-  background-color: #ffffff;
-  border-top: 1px solid #e2e8f0;
+  align-items: center;
+  gap: 12px;
+  max-width: var(--page-max);
+  min-height: var(--topbar-h);
+  margin: 0 auto;
+  padding: 0 16px;
 }
 
-.btn-logout {
-  background-color: #ef4444;
-  color: #ffffff;
-  padding: 8px 16px;
+.marca-mini {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  flex: none;
+  border-radius: var(--r-sm);
+  background: var(--ink);
+  color: var(--ink-inv);
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.topbar__volver {
+  margin-left: -8px;
+}
+
+.topbar__titulo {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.topbar__marca {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+.topbar__sep {
+  color: var(--line-strong);
+}
+
+.topbar__pantalla {
   font-size: 0.85rem;
-  font-weight: 600;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
+  font-weight: 500;
+  color: var(--ink-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.btn-logout:hover {
-  background-color: #dc2626;
+.topbar__salir {
+  margin-left: auto;
+  margin-right: -8px;
+  color: var(--ink-3);
+}
+
+.topbar__salir:hover {
+  color: var(--danger);
+  background: var(--danger-soft);
+}
+
+/* En pantallas chicas la barra se queda con lo esencial */
+@media (max-width: 560px) {
+  .topbar__marca {
+    display: none;
+  }
+
+  .topbar__sep {
+    display: none;
+  }
+
+  .topbar__pantalla {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  .topbar__volver-texto,
+  .topbar__salir-texto {
+    display: none;
+  }
+}
+
+/* ------------------------------------------------------------
+   Contenedor de pantallas
+   ------------------------------------------------------------ */
+
+.app__contenido {
+  flex: 1;
+  width: 100%;
+  max-width: var(--page-max);
+  margin: 0 auto;
+  padding: 28px 16px 64px;
+  animation: bm-rise var(--dur) var(--ease-out);
+}
+
+@media (max-width: 560px) {
+  .app__contenido {
+    padding: 20px 14px 56px;
+  }
+}
+
+/* Encabezado de pantalla, compartido por Buscar / Historial / Pendientes */
+.pantalla-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 22px;
+}
+
+.pantalla-head__texto {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pantalla-head h1 {
+  font-size: clamp(1.7rem, 1.3rem + 1.6vw, 2.2rem);
+}
+
+.pantalla-head p {
+  font-size: 0.92rem;
+  color: var(--ink-3);
+  max-width: 52ch;
+}
+
+/* Contador de resultados alineado al título */
+.pantalla-head__cuenta {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  padding-bottom: 4px;
+  color: var(--ink-3);
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.pantalla-head__cuenta strong {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  line-height: 1;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
 }

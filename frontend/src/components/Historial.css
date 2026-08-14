@@ -1,0 +1,135 @@
+/* ============================================================
+   Historial — lista compacta de trabajos cerrados
+   ============================================================ */
+
+.historial__lista {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.registro {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 13px 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: var(--surface);
+  text-align: left;
+  color: var(--ink);
+  box-shadow: var(--shadow-1);
+  transition:
+    border-color var(--dur-fast) ease,
+    background-color var(--dur-fast) ease,
+    box-shadow var(--dur-fast) ease,
+    transform var(--dur-press) var(--ease-out);
+}
+
+.registro__id {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  margin-right: auto;
+}
+
+.registro__vehiculo {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  line-height: 1.1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.registro__cliente {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+  color: var(--ink-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.registro__punto {
+  width: 3px;
+  height: 3px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--line-strong);
+}
+
+.registro__total {
+  flex: none;
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.registro__flecha {
+  flex: none;
+  color: var(--ink-3);
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .registro:hover {
+    border-color: var(--accent-line);
+    background: var(--surface-2);
+    box-shadow: var(--shadow-2);
+  }
+
+  .registro:hover .registro__flecha {
+    transform: translateX(3px);
+    color: var(--accent);
+  }
+}
+
+.registro:active {
+  transform: scale(0.995);
+}
+
+/* En el celular el registro se apila en dos filas */
+@media (max-width: 640px) {
+  .registro {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    grid-template-areas:
+      "patente id flecha"
+      "chip    chip total";
+    gap: 10px 12px;
+    padding: 14px;
+  }
+
+  .registro > .patente {
+    grid-area: patente;
+  }
+
+  .registro__id {
+    grid-area: id;
+  }
+
+  .registro > .chip {
+    grid-area: chip;
+    justify-self: start;
+  }
+
+  .registro__total {
+    grid-area: total;
+    align-self: center;
+    font-size: 1.1rem;
+  }
+
+  .registro__flecha {
+    grid-area: flecha;
+    align-self: center;
+  }
+}

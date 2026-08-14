@@ -1,0 +1,213 @@
+/* ============================================================
+   Ficha del vehículo
+   ============================================================ */
+
+.ficha {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.ficha__head {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.ficha__id {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.ficha__id h1 {
+  font-size: clamp(1.7rem, 1.3rem + 1.6vw, 2.2rem);
+}
+
+.ficha__meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 2px;
+}
+
+.ficha__fecha {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: var(--ink-3);
+}
+
+@media (max-width: 560px) {
+  .ficha__head {
+    gap: 14px;
+  }
+
+  .ficha__head .patente--lg {
+    min-width: 108px;
+  }
+
+  .ficha__head .patente--lg .patente__texto {
+    padding: 4px 10px 6px;
+    font-size: 1.25rem;
+  }
+}
+
+/* ------------------------------------------------------------
+   Bloques de datos
+   ------------------------------------------------------------ */
+
+.ficha__grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+
+.bloque {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px 20px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-1);
+  animation: bm-rise var(--dur) var(--ease-out) backwards;
+}
+
+.ficha__grid > *:nth-child(2) {
+  animation-delay: 40ms;
+}
+.ficha__grid > *:nth-child(3) {
+  animation-delay: 80ms;
+}
+.ficha__grid > *:nth-child(4) {
+  animation-delay: 120ms;
+}
+.ficha__grid > *:nth-child(5) {
+  animation-delay: 160ms;
+}
+.ficha__grid > *:nth-child(6) {
+  animation-delay: 200ms;
+}
+
+.bloque--ancho {
+  grid-column: span 2;
+}
+
+.bloque__titulo {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+  font-size: 1.05rem;
+  letter-spacing: 0.06em;
+}
+
+.bloque__titulo svg {
+  flex: none;
+  color: var(--accent);
+}
+
+.bloque__datos {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+
+.bloque__datos--columna {
+  grid-template-columns: 1fr;
+}
+
+@media (max-width: 700px) {
+  .ficha__grid,
+  .bloque__datos {
+    grid-template-columns: 1fr;
+  }
+
+  .bloque--ancho {
+    grid-column: span 1;
+  }
+}
+
+/* ------------------------------------------------------------
+   Cuenta — el cierre económico del trabajo
+   ------------------------------------------------------------ */
+
+.cuenta__filas {
+  display: flex;
+  flex-direction: column;
+}
+
+.cuenta__fila {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 11px 0;
+  border-bottom: 1px dashed var(--line);
+  font-size: 0.92rem;
+  color: var(--ink-2);
+}
+
+.cuenta__fila:last-child {
+  border-bottom: none;
+}
+
+.cuenta__fila > span:first-child {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.cuenta__fila svg {
+  flex: none;
+  color: var(--ink-3);
+}
+
+.cuenta__fila > span:last-child {
+  font-weight: 600;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+.cuenta__total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+  padding: 16px 20px;
+  border-radius: var(--r);
+  background: var(--ink);
+  color: var(--ink-inv);
+}
+
+.cuenta__total-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--ink-inv) 65%, transparent);
+}
+
+.cuenta__total-valor {
+  font-family: var(--font-display);
+  font-size: clamp(1.9rem, 1.4rem + 2vw, 2.6rem);
+  font-weight: 700;
+  line-height: 1;
+  color: var(--accent-inv);
+}
+
+/* ------------------------------------------------------------
+   Pie
+   ------------------------------------------------------------ */
+
+.ficha__volver {
+  align-self: flex-start;
+}

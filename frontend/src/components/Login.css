@@ -1,122 +1,220 @@
-/* --- CONTENEDOR CENTRADO EN PANTALLA --- */
-.login-wrapper {
-  min-height: 80vh;
+/* ============================================================
+   Acceso al sistema
+   ============================================================ */
+
+.login {
+  display: flex;
+  flex-direction: column;
+  min-height: 100svh;
+  background: var(--bg);
+}
+
+.login__grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1.05fr 1fr;
+  max-width: 1080px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 40px 24px;
+  gap: 56px;
+  align-items: center;
+}
+
+/* ------------------------------------------------------------
+   Panel de marca
+   ------------------------------------------------------------ */
+
+.login__marca {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  animation: bm-rise var(--dur-slow) var(--ease-out) backwards;
+}
+
+.login__marca-top {
+  display: flex;
+  /* La chapa entra apenas después del resto: es lo que se mira primero */
+  animation: bm-rise var(--dur-slow) var(--ease-out) 80ms backwards;
+}
+
+.login__marca-texto h1 {
+  display: flex;
+  flex-direction: column;
+  font-size: clamp(2.8rem, 2rem + 4vw, 4.4rem);
+  line-height: 0.9;
+  letter-spacing: 0.005em;
+  color: var(--ink);
+}
+
+.login__marca-texto h1 span {
+  color: var(--accent);
+}
+
+.login__marca-texto p {
+  max-width: 40ch;
+  margin-top: 16px;
+  font-size: 1rem;
+  color: var(--ink-3);
+}
+
+.login__lista {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+  padding: 22px 0 0;
+  border-top: 1px solid var(--line);
+  list-style: none;
+}
+
+.login__lista li {
   display: flex;
   align-items: center;
-  justify-content: center;
-  padding: 20px;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  gap: 11px;
+  font-size: 0.92rem;
+  color: var(--ink-2);
 }
 
-/* --- TARJETA DE LOGIN --- */
-.login-card {
-  background-color: #ffffff;
+.login__lista svg {
+  flex: none;
+  color: var(--accent);
+}
+
+/* ------------------------------------------------------------
+   Panel de acceso
+   ------------------------------------------------------------ */
+
+.login__acceso {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  animation: bm-rise var(--dur-slow) var(--ease-out) 120ms backwards;
+}
+
+.login__caja {
   width: 100%;
   max-width: 400px;
-  border-radius: 12px;
-  padding: 32px 28px;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1),
-              0 8px 10px -6px rgba(0, 0, 0, 0.05);
+  padding: 28px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-xl);
+  background: var(--surface);
+  box-shadow: var(--shadow-3);
 }
 
-/* --- ENCABEZADO Y LOGO --- */
-.login-header {
-  text-align: center;
-  margin-bottom: 28px;
+.login__caja-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-bottom: 22px;
+  margin-bottom: 22px;
+  border-bottom: 1px solid var(--line);
 }
 
-.login-icon {
-  font-size: 2.2rem;
-  background-color: #f1f5f9;
-  width: 60px;
-  height: 60px;
-  line-height: 60px;
-  border-radius: 50%;
-  margin: 0 auto 12px auto;
+.login__escudo {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  flex: none;
+  border-radius: var(--r);
+  background: var(--accent-soft);
+  color: var(--accent-ink);
 }
 
-.login-header h1 {
-  font-size: 1.6rem;
-  color: #0f172a;
-  margin: 0 0 4px 0;
-  font-weight: 800;
-  letter-spacing: -0.02em;
+.login__caja-head h2 {
+  font-size: 1.3rem;
 }
 
-.login-header p {
-  font-size: 0.9rem;
-  color: #64748b;
-  margin: 0;
+.login__caja-head p {
+  margin-top: 2px;
+  font-size: 0.85rem;
+  color: var(--ink-3);
 }
 
-/* --- FORMULARIO Y CAMPOS --- */
-.login-form {
+.login__form {
   display: flex;
   flex-direction: column;
   gap: 18px;
 }
 
-.input-group {
+.login__clave {
+  position: relative;
+}
+
+.login__clave input {
+  padding-right: 48px;
+}
+
+.login__ver {
+  position: absolute;
+  top: 50%;
+  right: 6px;
+  transform: translateY(-50%);
+}
+
+.login__ver:active {
+  transform: translateY(-50%) scale(var(--press));
+}
+
+.login__error {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
-  text-align: left;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 11px 13px;
+  border: 1px solid var(--danger-line);
+  border-radius: var(--r);
+  background: var(--danger-soft);
+  color: var(--danger);
+  font-size: 0.86rem;
+  line-height: 1.4;
+  animation: bm-rise var(--dur-fast) var(--ease-out);
 }
 
-.input-group label {
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: #475569;
+.login__error svg {
+  flex: none;
+  margin-top: 1px;
+}
+
+.login__pie {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  color: var(--ink-3);
 }
 
-.input-group input {
-  padding: 12px 14px;
-  border: 1px solid #cbd5e1;
-  border-radius: 8px;
-  font-size: 0.95rem;
-  background-color: #f8fafc;
-  color: #0f172a;
-  outline: none;
-  transition: all 0.2s ease;
-}
+/* ------------------------------------------------------------
+   Adaptación a pantallas chicas
+   ------------------------------------------------------------ */
 
-.input-group input:focus {
-  border-color: #2563eb;
-  background-color: #ffffff;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
-}
+@media (max-width: 860px) {
+  .login__grid {
+    grid-template-columns: 1fr;
+    gap: 32px;
+    padding: 32px 20px 48px;
+    align-content: center;
+  }
 
-/* Placeholders */
-.input-group input::placeholder {
-  font-family: 'Inter', Roboto, sans-serif;
-  font-size: 0.88rem;
-  font-style: italic;
-  color: #522323;
-}
+  .login__marca {
+    gap: 20px;
+    align-items: center;
+    text-align: center;
+  }
 
-/* --- BOTÓN DE INGRESO --- */
-.btn-login {
-  margin-top: 6px;
-  padding: 13px;
-  font-size: 1rem;
-  font-weight: 700;
-  color: #ffffff;
-  background-color: #522323;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
-}
+  .login__marca-texto h1 {
+    align-items: center;
+  }
 
-.btn-login:hover {
-  background-color: #1242c5;
-  box-shadow: 0 6px 12px -2px rgba(37, 99, 235, 0.3);
-}
+  .login__marca-texto p {
+    margin-inline: auto;
+  }
 
-.btn-login:active {
-  transform: scale(0.98);
+  /* En el celular el panel de marca cede espacio al formulario */
+  .login__lista {
+    display: none;
+  }
 }

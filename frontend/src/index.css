@@ -1,111 +1,318 @@
+/* ============================================================
+   BICHO MALO TALLER — Fundaciones del sistema de diseño
+   Grafito acero + ámbar industrial · Barlow Condensed / Inter
+   ============================================================ */
+
 :root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+  /* --- Superficies y líneas --- */
+  --bg: #eceff3;
+  --surface: #ffffff;
+  --surface-2: #f5f7f9;
+  --surface-3: #eaeef2;
+  --line: #dde2e8;
+  --line-strong: #c5ccd6;
 
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
+  /* --- Tinta --- */
+  --ink: #0f1419;
+  --ink-2: #39424e;
+  --ink-3: #626b79;
+  --ink-inv: #ffffff;
 
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
-  color-scheme: light dark;
-  color: var(--text);
-  background: var(--bg);
+  /* --- Acento industrial ---
+     `--on-accent` es lo que se apoya sobre el ámbar: siempre grafito,
+     como un cartel de obra. Blanco sobre ámbar no llega a AA.
+     `--accent-inv` es el ámbar que se usa sobre los paneles invertidos. */
+  --accent: #e8690b;
+  /* El hover aclara en vez de oscurecer: con texto grafito encima,
+     oscurecer el ámbar rompía el contraste. */
+  --accent-hover: #ff7d1a;
+  --accent-soft: #fdf0e4;
+  --accent-line: #f5c79a;
+  --accent-ring: rgba(232, 105, 11, 0.26);
+  --accent-ink: #8a3d02;
+  --accent-inv: #ff8a2b;
+  --on-accent: #10141a;
+
+  /* --- Semánticos de estado --- */
+  --ok: #17803d;
+  --ok-soft: #e4f5ea;
+  --ok-line: #a7dcba;
+  --info: #1d4ed8;
+  --info-soft: #e7edfd;
+  --info-line: #b3c6f7;
+  --neutral: #4d5866;
+  --neutral-soft: #eaedf1;
+  --neutral-line: #cdd4dd;
+  --danger: #c62a24;
+  --danger-hover: #a52220;
+  --danger-soft: #fceceb;
+  --danger-line: #f0b6b3;
+
+  /* --- Patente Mercosur --- */
+  --plate-blue: #1b3fa8;
+  --plate-bg: #ffffff;
+  --plate-ink: #0f1419;
+
+  /* --- Sombras --- */
+  --shadow-1: 0 1px 2px rgba(15, 20, 25, 0.06), 0 1px 1px rgba(15, 20, 25, 0.04);
+  --shadow-2: 0 4px 12px -2px rgba(15, 20, 25, 0.1), 0 2px 4px -2px rgba(15, 20, 25, 0.06);
+  --shadow-3: 0 18px 36px -10px rgba(15, 20, 25, 0.2), 0 6px 12px -6px rgba(15, 20, 25, 0.1);
+
+  /* --- Radios --- */
+  --r-sm: 6px;
+  --r: 10px;
+  --r-lg: 14px;
+  --r-xl: 20px;
+  --r-pill: 999px;
+
+  /* --- Tipografía --- */
+  --font-display: "Barlow Condensed", "Arial Narrow", "Segoe UI", system-ui, sans-serif;
+  --font-ui: "Inter", system-ui, "Segoe UI", Roboto, -apple-system, sans-serif;
+
+  /* --- Movimiento --- */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --dur-press: 140ms;
+  --dur-fast: 180ms;
+  --dur: 240ms;
+  --dur-slow: 320ms;
+
+  /* --- Layout --- */
+  --topbar-h: 58px;
+  --page-max: 940px;
+
+  color-scheme: light;
+  font-family: var(--font-ui);
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--ink-2);
+  background-color: var(--bg);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-
-  @media (max-width: 1024px) {
-    font-size: 16px;
-  }
+  -webkit-tap-highlight-color: transparent;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
-    --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
-  }
+    --bg: #0c0f13;
+    --surface: #151a21;
+    --surface-2: #1b2129;
+    --surface-3: #222933;
+    --line: #262e39;
+    --line-strong: #3a4552;
 
-  #social .button-icon {
-    filter: invert(1) brightness(2);
+    --ink: #f1f4f8;
+    --ink-2: #b7c1cd;
+    --ink-3: #7e8998;
+    --ink-inv: #0f1419;
+
+    --accent: #ff8a2b;
+    --accent-hover: #ffa254;
+    --accent-soft: rgba(255, 138, 43, 0.13);
+    --accent-line: rgba(255, 138, 43, 0.34);
+    --accent-ring: rgba(255, 138, 43, 0.3);
+    --accent-ink: #ffb877;
+    /* En oscuro los paneles invertidos son claros: el ámbar se hunde */
+    --accent-inv: #b34d00;
+
+    --ok: #4ade80;
+    --ok-soft: rgba(74, 222, 128, 0.13);
+    --ok-line: rgba(74, 222, 128, 0.32);
+    --info: #7ba6ff;
+    --info-soft: rgba(123, 166, 255, 0.13);
+    --info-line: rgba(123, 166, 255, 0.32);
+    --neutral: #a4afbd;
+    --neutral-soft: rgba(164, 175, 189, 0.12);
+    --neutral-line: rgba(164, 175, 189, 0.28);
+    --danger: #ff6b64;
+    --danger-hover: #ff8a84;
+    --danger-soft: rgba(255, 107, 100, 0.13);
+    --danger-line: rgba(255, 107, 100, 0.32);
+
+    --plate-blue: #2a55c9;
+
+    --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow-2: 0 4px 12px -2px rgba(0, 0, 0, 0.5), 0 2px 4px -2px rgba(0, 0, 0, 0.4);
+    --shadow-3: 0 18px 36px -10px rgba(0, 0, 0, 0.6), 0 6px 12px -6px rgba(0, 0, 0, 0.45);
+
+    color-scheme: dark;
   }
+}
+
+/* ------------------------------------------------------------
+   Reset
+   ------------------------------------------------------------ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
   margin: 0;
+  min-height: 100svh;
+  background-color: var(--bg);
+  color: var(--ink-2);
 }
 
 #root {
-  width: 1126px;
-  max-width: 100%;
-  margin: 0 auto;
-  text-align: center;
-  border-inline: 1px solid var(--border);
   min-height: 100svh;
   display: flex;
   flex-direction: column;
-  box-sizing: border-box;
 }
 
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+/* ------------------------------------------------------------
+   Tipografía base
+   ------------------------------------------------------------ */
+
 h1,
-h2 {
-  font-family: var(--heading);
-  font-weight: 500;
-  color: var(--text-h);
+h2,
+h3 {
+  font-family: var(--font-display);
+  color: var(--ink);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  margin: 0;
 }
 
 h1 {
-  font-size: 56px;
-  letter-spacing: -1.68px;
-  margin: 32px 0;
-  @media (max-width: 1024px) {
-    font-size: 36px;
-    margin: 20px 0;
-  }
+  font-size: clamp(1.9rem, 1.4rem + 2vw, 2.6rem);
 }
+
 h2 {
-  font-size: 24px;
-  line-height: 118%;
-  letter-spacing: -0.24px;
-  margin: 0 0 8px;
-  @media (max-width: 1024px) {
-    font-size: 20px;
-  }
+  font-size: 1.35rem;
 }
+
+h3 {
+  font-size: 1.1rem;
+}
+
 p {
   margin: 0;
 }
 
-code,
-.counter {
-  font-family: var(--mono);
-  display: inline-flex;
-  border-radius: 4px;
-  color: var(--text-h);
+strong {
+  color: var(--ink);
+  font-weight: 600;
 }
 
-code {
-  font-size: 15px;
-  line-height: 135%;
-  padding: 4px 8px;
-  background: var(--code-bg);
+/* Números alineados en columnas (montos, kilometrajes, fechas) */
+.num {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+/* Etiqueta estructural: eyebrow en versalitas */
+.eyebrow {
+  font-family: var(--font-ui);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+/* ------------------------------------------------------------
+   Foco visible — un solo tratamiento en toda la app
+   ------------------------------------------------------------ */
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: var(--r-sm);
+}
+
+/* Solo para lectores de pantalla */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ------------------------------------------------------------
+   Movimiento compartido
+   ------------------------------------------------------------ */
+
+/* Los desplazamientos se expresan con estos dos factores. Con movimiento
+   reducido valen 0/1: el fundido sigue explicando el cambio, el
+   desplazamiento desaparece. */
+:root {
+  --shift: 10px;
+  --lift: -3px;
+  --press: 0.97;
+}
+
+@keyframes bm-rise {
+  from {
+    opacity: 0;
+    transform: translateY(var(--shift));
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes bm-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Entrada escalonada de listas: cada ítem define --i */
+.stagger > * {
+  animation: bm-rise var(--dur) var(--ease-out) backwards;
+  animation-delay: calc(var(--i, 0) * 45ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --shift: 0px;
+    --lift: 0px;
+    --press: 1;
+  }
+
+  .stagger > * {
+    animation-delay: 0ms;
+  }
 }

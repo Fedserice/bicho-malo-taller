@@ -6,35 +6,83 @@ import Pendientes from "./components/Pendientes";
 import Buscar from "./components/Buscar";
 import Historial from "./components/Historial";
 import FichaIngreso from "./components/FichaIngreso";
+import Icon from "./ui/Icon";
+import { useToast } from "./ui/useToast";
 import "./App.css";
+
+// Cada pantalla declara cómo se llama y a dónde vuelve.
+const PANTALLAS = {
+  inicio: { titulo: "Inicio", vuelveA: null },
+  nuevo: { titulo: "Nuevo ingreso", vuelveA: "inicio" },
+  buscar: { titulo: "Buscar", vuelveA: "inicio" },
+  historial: { titulo: "Historial", vuelveA: "inicio" },
+  ficha: { titulo: "Ficha del vehículo", vuelveA: "historial" },
+  pendientes: { titulo: "En el taller", vuelveA: "inicio" },
+};
 
 function App() {
   const [logueado, setLogueado] = useState(false);
   const [pantalla, setPantalla] = useState("inicio");
   const [borradorSeleccionado, setBorradorSeleccionado] = useState(null);
   const [ingresoSeleccionado, setIngresoSeleccionado] = useState(null);
+  const avisar = useToast();
 
   if (!logueado) {
     return <Login onLogin={() => setLogueado(true)} />;
   }
 
-  return (
-    <div className="app-main-container">
-      {/* BARRA SUPERIOR (Muestra el botón "Volver" ARRIBA si no estás en Inicio) */}
-      {pantalla !== "inicio" && (
-        <header className="top-navbar">
-          <button
-            className="btn-volver-top"
-            onClick={() => setPantalla("inicio")}
-          >
-            ⬅️ Volver al Inicio
-          </button>
-          <span className="navbar-brand">Bicho Malo Taller</span>
-        </header>
-      )}
+  const actual = PANTALLAS[pantalla] ?? PANTALLAS.inicio;
 
-      {/* PANTALLAS DEL SISTEMA */}
-      <main className="app-content">
+  function cerrarSesion() {
+    setLogueado(false);
+    setPantalla("inicio");
+    setBorradorSeleccionado(null);
+    setIngresoSeleccionado(null);
+    avisar("Sesión cerrada", "info");
+  }
+
+  return (
+    <div className="app">
+      <div className="franja" aria-hidden="true" />
+
+      <header className="topbar">
+        <div className="topbar__inner">
+          {actual.vuelveA ? (
+            <button
+              type="button"
+              className="btn btn--ghost btn--sm topbar__volver"
+              onClick={() => setPantalla(actual.vuelveA)}
+            >
+              <Icon name="izquierda" size={17} />
+              <span className="topbar__volver-texto">Volver</span>
+            </button>
+          ) : (
+            <span className="marca-mini" aria-hidden="true">
+              BM
+            </span>
+          )}
+
+          <div className="topbar__titulo">
+            <span className="topbar__marca">Bicho Malo Taller</span>
+            {pantalla !== "inicio" && (
+              <>
+                <span className="topbar__sep" aria-hidden="true">
+                  /
+                </span>
+                <span className="topbar__pantalla">{actual.titulo}</span>
+              </>
+            )}
+          </div>
+
+          <button type="button" className="btn btn--ghost btn--sm topbar__salir" onClick={cerrarSesion}>
+            <Icon name="salir" size={17} />
+            <span className="topbar__salir-texto">Salir</span>
+          </button>
+        </div>
+      </header>
+
+      {/* La `key` remonta el contenido: cada cambio de pantalla entra con su propia animación. */}
+      <main className="app__contenido" key={pantalla}>
         {pantalla === "inicio" && (
           <Inicio
             onNuevoIngreso={() => {
@@ -48,19 +96,13 @@ function App() {
         )}
 
         {pantalla === "nuevo" && (
-          <NuevoIngreso
-            borrador={borradorSeleccionado}
-            onVolver={() => setPantalla("inicio")}
-          />
+          <NuevoIngreso borrador={borradorSeleccionado} onVolver={() => setPantalla("inicio")} />
         )}
 
-        {pantalla === "buscar" && (
-          <Buscar onVolver={() => setPantalla("inicio")} />
-        )}
+        {pantalla === "buscar" && <Buscar />}
 
         {pantalla === "historial" && (
           <Historial
-            onVolver={() => setPantalla("inicio")}
             onSeleccionar={(ingreso) => {
               setIngresoSeleccionado(ingreso);
               setPantalla("ficha");
@@ -69,35 +111,22 @@ function App() {
         )}
 
         {pantalla === "ficha" && ingresoSeleccionado && (
-          <FichaIngreso
-            ingreso={ingresoSeleccionado}
-            onVolver={() => setPantalla("historial")}
-          />
+          <FichaIngreso ingreso={ingresoSeleccionado} onVolver={() => setPantalla("historial")} />
         )}
 
         {pantalla === "pendientes" && (
           <Pendientes
-            onVolver={() => setPantalla("inicio")}
             onAbrir={(borrador) => {
               setBorradorSeleccionado(borrador);
+              setPantalla("nuevo");
+            }}
+            onNuevoIngreso={() => {
+              setBorradorSeleccionado(null);
               setPantalla("nuevo");
             }}
           />
         )}
       </main>
-
-      {/* BARRA INFERIOR (Solo para Cerrar Sesión) */}
-      <footer className="barra-inferior">
-        <button
-          className="btn-logout"
-          onClick={() => {
-            setLogueado(false);
-            setPantalla("inicio");
-          }}
-        >
-          🚪 Cerrar sesión
-        </button>
-      </footer>
     </div>
   );
 }
