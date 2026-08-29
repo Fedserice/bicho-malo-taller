@@ -1,7 +1,11 @@
-export const schema = `
-  drop table if exists public.ingresos cascade;
-  
-  create extension if not exists pg_trgm;
-  
-  -- ...resto del SQL...
-`;
+import { createClient } from "@supabase/supabase-js";
+
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+export const supabase = createClient(
+  supabaseUrl || "https://placeholder.supabase.co",
+  supabaseAnonKey || "placeholder"
+);
+
+export const hayConfig = Boolean(supabaseUrl && supabaseAnonKey);

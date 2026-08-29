@@ -112,7 +112,9 @@ function FichaIngreso({ ingreso, onVolver }) {
                 Mano de obra
               </span>
               <span className="num">{pesos.format(manoObra)}</span>
-            </div>
+            </div>git add .
+git commit -m "Eliminado el apartado de repuestos"
+git push
           </div>
 
           <div className="cuenta__total">

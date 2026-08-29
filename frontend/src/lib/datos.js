@@ -195,18 +195,23 @@ export async function listarEnTaller() {
 
 /** Busca vehículos por patente, cliente o marca/modelo. */
 export async function buscarVehiculos(consulta) {
-  const texto = consulta.trim().replace(/[(),]/g, " ").replace(/[%_\\]/g, "\\$&");
-  if (!texto) return [];
+  const t = consulta.trim().replace(/[(),]/g, " ").replace(/[%_\\]/g, "\\$&");
+  if (!t) return [];
 
   const { data, error } = await supabase
     .from("vehiculos_resumen")
     .select("*")
-    .or(`patente.ilike.%${texto}%,cliente.ilike.%${texto}%,vehiculo.ilike.%${texto}%`)
+    .or(`patente.ilike.%${t}%,cliente.ilike.%${t}%,vehiculo.ilike.%${t}%`)
     .order("ultima_fecha", { ascending: false })
     .limit(50);
 
   reventar(error);
   return data ?? [];
+}
+
+/** Alias para compatibilidad con componente Buscar.jsx */
+export async function buscarIngresos(consulta) {
+  return await buscarVehiculos(consulta);
 }
 
 // ------------------------------------------------------------
@@ -242,6 +247,31 @@ export async function actualizarVisita(visitaId, datos) {
 
   reventar(error);
   return desdeFilaVisita(data);
+}
+
+/** Función wrapper para compatibilidad con NuevoIngreso.jsx */
+export async function guardarIngreso(datos, opciones = {}) {
+  let vehiculoExistente = await buscarVehiculoPorPatente(datos.patente);
+  
+  if (!vehiculoExistente) {
+    vehiculoExistente = await crearClienteYVehiculo({
+      patente: datos.patente,
+      vehiculo: datos.vehiculo,
+      cliente: datos.cliente,
+      telefono: datos.telefono,
+    });
+  }
+
+  const datosVisita = {
+    ...datos,
+    estado: opciones.finalizado ? "Entregado" : (datos.estado || "En reparación")
+  };
+
+  if (datos.id) {
+    return await actualizarVisita(datos.id, datosVisita);
+  } else {
+    return await crearVisita(vehiculoExistente.id, datosVisita);
+  }
 }
 
 // ------------------------------------------------------------
