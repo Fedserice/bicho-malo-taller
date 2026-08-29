@@ -12,7 +12,6 @@ const pesos = new Intl.NumberFormat("es-AR", {
 const kilometros = new Intl.NumberFormat("es-AR");
 
 function FichaIngreso({ ingreso, onVolver }) {
-  const repuestos = Number(ingreso.repuestosTaller) || 0;
   const manoObra = Number(ingreso.manoObra) || 0;
   const total = Number(ingreso.totalCobrado) || 0;
 
@@ -105,13 +104,7 @@ function FichaIngreso({ ingreso, onVolver }) {
           </h2>
 
           <div className="cuenta__filas">
-            <div className="cuenta__fila">
-              <span>
-                <Icon name="caja" size={15} />
-                Repuestos del taller
-              </span>
-              <span className="num">{pesos.format(repuestos)}</span>
-            </div>
+            
 
             <div className="cuenta__fila">
               <span>
@@ -119,14 +112,6 @@ function FichaIngreso({ ingreso, onVolver }) {
                 Mano de obra
               </span>
               <span className="num">{pesos.format(manoObra)}</span>
-            </div>
-
-            <div className="cuenta__fila">
-              <span>
-                <Icon name="persona" size={15} />
-                Repuestos puestos por el cliente
-              </span>
-              <span>{ingreso.repuestosCliente ? "Sí" : "No"}</span>
             </div>
           </div>
 
