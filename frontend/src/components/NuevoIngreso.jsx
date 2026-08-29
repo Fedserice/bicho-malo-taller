@@ -16,8 +16,6 @@ const ESTADO_INICIAL = {
   motivo: "",
   diagnostico: "",
   trabajos: "",
-  repuestosTaller: "",
-  repuestosCliente: false,
   manoObra: "",
   totalCobrado: "",
   mecanico: "",
@@ -36,7 +34,6 @@ const OBLIGATORIOS = [
   ["motivo", "Motivo"],
   ["diagnostico", "Diagnóstico"],
   ["trabajos", "Trabajos realizados"],
-  ["repuestosTaller", "Repuestos del taller"],
   ["manoObra", "Mano de obra"],
   ["totalCobrado", "Total cobrado"],
   ["mecanico", "Mecánico"],
@@ -44,12 +41,6 @@ const OBLIGATORIOS = [
   ["pendientes", "Pendientes"],
   ["observaciones", "Observaciones"],
 ];
-
-const pesos = new Intl.NumberFormat("es-AR", {
-  style: "currency",
-  currency: "ARS",
-  maximumFractionDigits: 0,
-});
 
 function NuevoIngreso({ onVolver, ingreso }) {
   const [datos, setDatos] = useState(ingreso || ESTADO_INICIAL);
@@ -154,8 +145,6 @@ function NuevoIngreso({ onVolver, ingreso }) {
   }
 
   const claseCampo = (campo) => `campo ${faltantes.includes(campo) ? "campo--error" : ""}`.trim();
-
-  const sumaCostos = (Number(datos.repuestosTaller) || 0) + (Number(datos.manoObra) || 0);
 
   return (
     <div className="ingreso">
@@ -317,29 +306,14 @@ function NuevoIngreso({ onVolver, ingreso }) {
           </div>
         </section>
 
-        {/* 03 — REPUESTOS Y COSTOS */}
+        {/* 03 — COSTOS */}
         <section className="seccion">
           <div className="seccion__head">
             <span className="seccion__num">03</span>
-            <h2>Repuestos y costos</h2>
+            <h2>Costos</h2>
           </div>
 
           <div className="rejilla-2">
-            <div className={claseCampo("repuestosTaller")}>
-              <label htmlFor="repuestosTaller">
-                Repuestos del taller <span className="campo__req">*</span>
-              </label>
-              <input
-                id="repuestosTaller"
-                name="repuestosTaller"
-                type="number"
-                inputMode="numeric"
-                placeholder="0"
-                value={datos.repuestosTaller}
-                onChange={cambiarDato}
-              />
-            </div>
-
             <div className={claseCampo("manoObra")}>
               <label htmlFor="manoObra">
                 Mano de obra <span className="campo__req">*</span>
@@ -353,18 +327,6 @@ function NuevoIngreso({ onVolver, ingreso }) {
                 value={datos.manoObra}
                 onChange={cambiarDato}
               />
-            </div>
-
-            <div className="ancho-2">
-              <label className="check">
-                <input
-                  name="repuestosCliente"
-                  type="checkbox"
-                  checked={datos.repuestosCliente}
-                  onChange={cambiarDato}
-                />
-                <span>Los repuestos los puso el cliente</span>
-              </label>
             </div>
 
             {/* El total va aparte: es el número que se cobra */}
@@ -386,11 +348,6 @@ function NuevoIngreso({ onVolver, ingreso }) {
                   onChange={cambiarDato}
                 />
               </div>
-              {sumaCostos > 0 && (
-                <span className="total__ayuda num">
-                  Repuestos + mano de obra: {pesos.format(sumaCostos)}
-                </span>
-              )}
             </div>
           </div>
         </section>
