@@ -1,0 +1,75 @@
+/* ============================================================
+   Reportes
+   ============================================================ */
+
+.reportes {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.reportes__bloque {
+  gap: 18px;
+}
+
+.reportes__vacio {
+  color: var(--ink-3);
+  font-size: 0.9rem;
+}
+
+.reportes__barras {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.reportes__barra-fila {
+  display: grid;
+  grid-template-columns: 88px 1fr auto;
+  align-items: center;
+  gap: 12px;
+}
+
+.reportes__barra-label {
+  font-size: 0.85rem;
+  color: var(--ink-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.reportes__barra-pista {
+  height: 10px;
+  border-radius: var(--r-pill);
+  background: var(--surface-3);
+  overflow: hidden;
+}
+
+.reportes__barra-valor {
+  height: 100%;
+  border-radius: var(--r-pill);
+  background: var(--accent);
+  transition: width var(--dur-slow) var(--ease-out);
+}
+
+.reportes__barra-valor--info {
+  background: var(--info);
+}
+
+.reportes__barra-num {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+@media (max-width: 560px) {
+  .reportes__barra-fila {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+
+  .reportes__barra-num {
+    text-align: right;
+  }
+}

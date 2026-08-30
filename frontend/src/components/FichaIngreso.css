@@ -205,6 +205,43 @@
 }
 
 /* ------------------------------------------------------------
+   Historial de visitas
+   ------------------------------------------------------------ */
+
+.ficha__historial {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.ficha__historial-titulo {
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.visita__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.visita__titulo {
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.visita--actual {
+  border-color: var(--accent-line);
+  box-shadow: var(--shadow-2);
+}
+
+/* ------------------------------------------------------------
    Pie
    ------------------------------------------------------------ */
 

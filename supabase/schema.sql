@@ -1,11 +1,13 @@
 -- ============================================================
--- Bicho Malo Taller — esquema de base de datos
+-- Bicho Malo Taller — esquema de base de datos (v2)
 --
 -- Pegar entero en el SQL Editor de Supabase y ejecutar.
 -- Es re-ejecutable: no rompe nada si ya se corrió antes.
 --
--- Las columnas salen de los campos del formulario de ingreso.
--- "Pendientes" e "Historial" son la misma tabla: cambia `finalizado`.
+-- Modelo: clientes → vehículos (ficha única por patente) → visitas
+-- (una fila por cada paso del auto por el taller). Un vehículo
+-- guarda todo su historial en `visitas`; su estado actual es el
+-- de la visita más reciente.
 -- ============================================================
 
 create extension if not exists pg_trgm;
@@ -26,68 +28,64 @@ values ('Román Federice'), ('Gonzalo Federice'), ('Juan Mecánico')
 on conflict (nombre) do nothing;
 
 -- ------------------------------------------------------------
--- Ingresos
+-- Clientes
 -- ------------------------------------------------------------
 
-create table if not exists public.ingresos (
+create table if not exists public.clientes (
+  id         uuid primary key default gen_random_uuid(),
+  nombre     text not null default '',
+  telefono   text not null default '',
+  creado_en  timestamptz not null default now()
+);
+
+-- ------------------------------------------------------------
+-- Vehículos (ficha única por patente)
+-- ------------------------------------------------------------
+
+create table if not exists public.vehiculos (
+  id          uuid primary key default gen_random_uuid(),
+  cliente_id  uuid not null references public.clientes (id) on delete cascade,
+  patente     text not null unique,
+  vehiculo    text not null default '',
+  creado_en   timestamptz not null default now()
+);
+
+create index if not exists vehiculos_patente_idx on public.vehiculos (upper(patente));
+create index if not exists vehiculos_cliente_idx on public.vehiculos (cliente_id);
+
+-- ------------------------------------------------------------
+-- Visitas (una por cada paso del vehículo por el taller)
+-- ------------------------------------------------------------
+
+create table if not exists public.visitas (
   id                 uuid primary key default gen_random_uuid(),
+  vehiculo_id        uuid not null references public.vehiculos (id) on delete cascade,
 
-  -- Vehículo y cliente
-  patente            text not null default '',
-  cliente            text not null default '',
-  telefono           text not null default '',
-  vehiculo           text not null default '',
-  kilometraje        integer,
   fecha              date not null default current_date,
+  kilometraje        integer,
 
-  -- Problema y trabajos
   motivo             text not null default '',
   diagnostico        text not null default '',
   trabajos           text not null default '',
 
-  -- Repuestos y costos
-  repuestos_taller   numeric(12, 2),
-  repuestos_cliente  boolean not null default false,
   mano_obra          numeric(12, 2),
   total_cobrado      numeric(12, 2),
 
-  -- Cierre
   mecanico           text not null default '',
   estado             text not null default 'Pendiente',
   pendientes         text not null default '',
   observaciones      text not null default '',
 
-  -- false = el auto sigue en el taller · true = trabajo cerrado
-  finalizado         boolean not null default false,
-
   creado_por         uuid references auth.users (id) on delete set null,
   creado_en          timestamptz not null default now(),
   actualizado_en     timestamptz not null default now(),
 
-  constraint ingresos_estado_valido
+  constraint visitas_estado_valido
     check (estado in ('Pendiente', 'En reparación', 'Finalizado', 'Entregado'))
 );
 
--- Columna de búsqueda: junta todo lo que el buscador del frontend mira.
-alter table public.ingresos
-  add column if not exists busqueda text
-  generated always as (
-    coalesce(patente, '') || ' ' ||
-    coalesce(cliente, '') || ' ' ||
-    coalesce(vehiculo, '') || ' ' ||
-    coalesce(trabajos, '') || ' ' ||
-    coalesce(motivo, '') || ' ' ||
-    coalesce(diagnostico, '')
-  ) stored;
-
-create index if not exists ingresos_finalizado_idx
-  on public.ingresos (finalizado, creado_en desc);
-
-create index if not exists ingresos_patente_idx
-  on public.ingresos (upper(patente));
-
-create index if not exists ingresos_busqueda_idx
-  on public.ingresos using gin (busqueda gin_trgm_ops);
+create index if not exists visitas_vehiculo_idx on public.visitas (vehiculo_id, creado_en desc);
+create index if not exists visitas_estado_idx on public.visitas (estado);
 
 -- ------------------------------------------------------------
 -- actualizado_en se mantiene solo
@@ -105,11 +103,49 @@ begin
 end;
 $$;
 
-drop trigger if exists ingresos_actualizado_en on public.ingresos;
+drop trigger if exists visitas_actualizado_en on public.visitas;
 
-create trigger ingresos_actualizado_en
-  before update on public.ingresos
+create trigger visitas_actualizado_en
+  before update on public.visitas
   for each row execute function public.tocar_actualizado_en();
+
+-- ------------------------------------------------------------
+-- Vista resumen: un vehículo por fila con los datos de su
+-- última visita. Alimenta Inicio, Historial, Pendientes y Buscar.
+-- ------------------------------------------------------------
+
+create or replace view public.vehiculos_resumen as
+select
+  v.id,
+  v.patente,
+  v.vehiculo,
+  c.nombre                 as cliente,
+  c.telefono                as telefono,
+  uv.id                     as ultima_visita_id,
+  uv.fecha                  as fecha,
+  uv.estado                 as estado,
+  uv.motivo                 as motivo,
+  uv.mecanico                as mecanico,
+  uv.total_cobrado           as "totalCobrado",
+  uv.creado_en                as ultimo_movimiento,
+  (select count(*) from public.visitas vi where vi.vehiculo_id = v.id) as cantidad_visitas,
+  (
+    coalesce(v.patente, '') || ' ' ||
+    coalesce(c.nombre, '') || ' ' ||
+    coalesce(v.vehiculo, '') || ' ' ||
+    coalesce(uv.trabajos, '') || ' ' ||
+    coalesce(uv.motivo, '') || ' ' ||
+    coalesce(uv.diagnostico, '')
+  ) as busqueda
+from public.vehiculos v
+join public.clientes c on c.id = v.cliente_id
+left join lateral (
+  select *
+  from public.visitas vi
+  where vi.vehiculo_id = v.id
+  order by vi.creado_en desc
+  limit 1
+) uv on true;
 
 -- ------------------------------------------------------------
 -- Seguridad a nivel de fila
@@ -118,19 +154,87 @@ create trigger ingresos_actualizado_en
 -- Sin sesión no se ve nada.
 -- ------------------------------------------------------------
 
-alter table public.ingresos  enable row level security;
+alter table public.clientes  enable row level security;
+alter table public.vehiculos enable row level security;
+alter table public.visitas   enable row level security;
 alter table public.mecanicos enable row level security;
 
-drop policy if exists "ingresos: leer"     on public.ingresos;
-drop policy if exists "ingresos: crear"    on public.ingresos;
-drop policy if exists "ingresos: editar"   on public.ingresos;
-drop policy if exists "ingresos: borrar"   on public.ingresos;
+drop policy if exists "clientes: leer"   on public.clientes;
+drop policy if exists "clientes: crear"  on public.clientes;
+drop policy if exists "clientes: editar" on public.clientes;
+drop policy if exists "clientes: borrar" on public.clientes;
 
-create policy "ingresos: leer"   on public.ingresos for select to authenticated using (true);
-create policy "ingresos: crear"  on public.ingresos for insert to authenticated with check (true);
-create policy "ingresos: editar" on public.ingresos for update to authenticated using (true) with check (true);
-create policy "ingresos: borrar" on public.ingresos for delete to authenticated using (true);
+create policy "clientes: leer"   on public.clientes for select to authenticated using (true);
+create policy "clientes: crear"  on public.clientes for insert to authenticated with check (true);
+create policy "clientes: editar" on public.clientes for update to authenticated using (true) with check (true);
+create policy "clientes: borrar" on public.clientes for delete to authenticated using (true);
+
+drop policy if exists "vehiculos: leer"   on public.vehiculos;
+drop policy if exists "vehiculos: crear"  on public.vehiculos;
+drop policy if exists "vehiculos: editar" on public.vehiculos;
+drop policy if exists "vehiculos: borrar" on public.vehiculos;
+
+create policy "vehiculos: leer"   on public.vehiculos for select to authenticated using (true);
+create policy "vehiculos: crear"  on public.vehiculos for insert to authenticated with check (true);
+create policy "vehiculos: editar" on public.vehiculos for update to authenticated using (true) with check (true);
+create policy "vehiculos: borrar" on public.vehiculos for delete to authenticated using (true);
+
+drop policy if exists "visitas: leer"   on public.visitas;
+drop policy if exists "visitas: crear"  on public.visitas;
+drop policy if exists "visitas: editar" on public.visitas;
+drop policy if exists "visitas: borrar" on public.visitas;
+
+create policy "visitas: leer"   on public.visitas for select to authenticated using (true);
+create policy "visitas: crear"  on public.visitas for insert to authenticated with check (true);
+create policy "visitas: editar" on public.visitas for update to authenticated using (true) with check (true);
+create policy "visitas: borrar" on public.visitas for delete to authenticated using (true);
 
 drop policy if exists "mecanicos: leer" on public.mecanicos;
 
 create policy "mecanicos: leer" on public.mecanicos for select to authenticated using (true);
+
+-- ------------------------------------------------------------
+-- Migración desde v1 (tabla única `ingresos`)
+--
+-- Si tu base todavía tiene la tabla vieja `ingresos`, esto la
+-- vuelca al modelo nuevo y la borra. Si nunca existió, no hace
+-- nada. Correr una sola vez, después de crear las tablas de arriba.
+-- ------------------------------------------------------------
+
+do $$
+begin
+  if exists (select 1 from information_schema.tables where table_schema = 'public' and table_name = 'ingresos') then
+
+    insert into public.clientes (nombre, telefono)
+    select distinct on (upper(trim(patente))) cliente, telefono
+    from public.ingresos
+    where coalesce(trim(patente), '') <> ''
+    order by upper(trim(patente)), creado_en desc;
+
+    insert into public.vehiculos (cliente_id, patente, vehiculo)
+    select c.id, upper(trim(i.patente)), i.vehiculo
+    from (
+      select distinct on (upper(trim(patente))) *
+      from public.ingresos
+      where coalesce(trim(patente), '') <> ''
+      order by upper(trim(patente)), creado_en desc
+    ) i
+    join public.clientes c on c.nombre = i.cliente and c.telefono = i.telefono
+    on conflict (patente) do nothing;
+
+    insert into public.visitas (
+      vehiculo_id, fecha, kilometraje, motivo, diagnostico, trabajos,
+      mano_obra, total_cobrado, mecanico, estado, pendientes, observaciones,
+      creado_por, creado_en
+    )
+    select
+      vh.id, i.fecha, i.kilometraje, i.motivo, i.diagnostico, i.trabajos,
+      i.mano_obra, i.total_cobrado, i.mecanico, i.estado, i.pendientes, i.observaciones,
+      i.creado_por, i.creado_en
+    from public.ingresos i
+    join public.vehiculos vh on vh.patente = upper(trim(i.patente))
+    where coalesce(trim(i.patente), '') <> '';
+
+    drop table public.ingresos;
+  end if;
+end $$;

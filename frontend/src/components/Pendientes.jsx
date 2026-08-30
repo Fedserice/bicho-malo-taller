@@ -1,17 +1,31 @@
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import Icon from "../ui/Icon";
 import Patente from "../ui/Patente";
 import EstadoChip from "../ui/EstadoChip";
 import { Cargando, ErrorDatos } from "../ui/Estados";
-import { listarEnTaller } from "../lib/datos";
+import { listarEnTaller, obtenerVisitaParaEditar } from "../lib/datos";
 import { useConsulta } from "../lib/useConsulta";
+import { useToast } from "../ui/useToast";
 import "./Pendientes.css";
 
 function Pendientes({ onAbrir, onNuevoIngreso }) {
   const consulta = useCallback(() => listarEnTaller(), []);
   const { cargando, error, datos } = useConsulta(consulta, []);
+  const [abriendo, setAbriendo] = useState(null);
+  const avisar = useToast();
 
   const ingresos = datos ?? [];
+
+  async function continuarIngreso(ingreso) {
+    setAbriendo(ingreso.id);
+    try {
+      const visita = await obtenerVisitaParaEditar(ingreso.vehiculoId, ingreso.ultimaVisitaId);
+      onAbrir(visita);
+    } catch (error) {
+      avisar(error.message || "No se pudo abrir el ingreso", "error");
+      setAbriendo(null);
+    }
+  }
 
   return (
     <div className="pendientes">
@@ -78,9 +92,14 @@ function Pendientes({ onAbrir, onNuevoIngreso }) {
               <button
                 type="button"
                 className="btn btn--outline btn--block pendiente__accion"
-                onClick={() => onAbrir(ingreso)}
+                onClick={() => continuarIngreso(ingreso)}
+                disabled={abriendo !== null}
               >
-                <Icon name="lapiz" size={17} />
+                {abriendo === ingreso.id ? (
+                  <span className="spinner spinner--boton" aria-hidden="true" />
+                ) : (
+                  <Icon name="lapiz" size={17} />
+                )}
                 Continuar ingreso
               </button>
             </article>

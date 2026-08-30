@@ -7,7 +7,7 @@ import { buscarIngresos } from "../lib/datos";
 import { useConsulta } from "../lib/useConsulta";
 import "./Buscar.css";
 
-function Buscar() {
+function Buscar({ onSeleccionar }) {
   const [texto, setTexto] = useState("");
   const [consultaFirme, setConsultaFirme] = useState("");
 
@@ -93,7 +93,17 @@ function Buscar() {
       {!buscando && resultados.length > 0 && (
         <div className="resultados stagger">
           {resultados.map((ingreso, i) => (
-            <article key={ingreso.id} className="resultado" style={{ "--i": i }}>
+            <article
+              key={ingreso.id}
+              className="resultado resultado--clickeable"
+              style={{ "--i": i }}
+              role="button"
+              tabIndex={0}
+              onClick={() => onSeleccionar?.(ingreso)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") onSeleccionar?.(ingreso);
+              }}
+            >
               <div className="resultado__head">
                 <Patente valor={ingreso.patente} />
                 <div className="resultado__id">

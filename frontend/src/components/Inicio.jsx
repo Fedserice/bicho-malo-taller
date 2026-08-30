@@ -13,7 +13,7 @@ const pesos = new Intl.NumberFormat("es-AR", {
 
 const RESUMEN_VACIO = { enTaller: 0, cerrados: 0, facturado: 0 };
 
-function Inicio({ onNuevoIngreso, onBuscar, onHistorial, onPendientes }) {
+function Inicio({ onNuevoIngreso, onBuscar, onHistorial, onPendientes, onKanban, onReportes }) {
   const consulta = useCallback(() => obtenerResumen(), []);
   const { cargando, error, datos } = useConsulta(consulta, RESUMEN_VACIO);
 
@@ -97,13 +97,35 @@ function Inicio({ onNuevoIngreso, onBuscar, onHistorial, onPendientes }) {
           {resumen.enTaller > 0 && <span className="tile__contador num">{resumen.enTaller}</span>}
         </button>
 
-        <button type="button" className="tile tile--ancho" onClick={onHistorial}>
+        <button type="button" className="tile" onClick={onHistorial}>
           <span className="tile__icono">
             <Icon name="planilla" size={20} />
           </span>
           <span className="tile__texto">
             <span className="tile__titulo">Historial</span>
-            <span className="tile__desc">Todos los trabajos terminados</span>
+            <span className="tile__desc">Vehículos entregados</span>
+          </span>
+          <Icon name="chevron" size={18} className="tile__flecha" />
+        </button>
+
+        <button type="button" className="tile" onClick={onKanban}>
+          <span className="tile__icono">
+            <Icon name="tablero" size={20} />
+          </span>
+          <span className="tile__texto">
+            <span className="tile__titulo">Tablero</span>
+            <span className="tile__desc">El taller de un vistazo, por estado</span>
+          </span>
+          <Icon name="chevron" size={18} className="tile__flecha" />
+        </button>
+
+        <button type="button" className="tile tile--ancho" onClick={onReportes}>
+          <span className="tile__icono">
+            <Icon name="grafico" size={20} />
+          </span>
+          <span className="tile__texto">
+            <span className="tile__titulo">Reportes</span>
+            <span className="tile__desc">Facturación y desempeño por mecánico</span>
           </span>
           <Icon name="chevron" size={18} className="tile__flecha" />
         </button>

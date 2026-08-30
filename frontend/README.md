@@ -1,6 +1,7 @@
 # Bicho Malo Taller
 
-Sistema de gestión del taller: ingresos, vehículos adentro e historial de trabajos.
+Sistema de gestión del taller: ingresos, vehículos adentro, historial por
+auto, tablero de estados y reportes de facturación.
 
 React 19 + Vite · Supabase (auth + Postgres).
 
@@ -14,7 +15,12 @@ En [supabase.com](https://supabase.com) → **New project**. Anotá la contrase�
 
 Supabase → **SQL Editor** → pegar entero el contenido de [`../supabase/schema.sql`](../supabase/schema.sql) y ejecutar.
 
-Crea `ingresos` y `mecanicos`, los índices de búsqueda y las políticas de RLS. Se puede volver a correr sin romper nada.
+Crea `clientes`, `vehiculos`, `visitas`, `mecanicos`, la vista `vehiculos_resumen`
+y las políticas de RLS. Se puede volver a correr sin romper nada.
+
+> Si tu base todavía tiene la tabla vieja `ingresos` (versión anterior de
+> este sistema), el mismo script la migra sola al modelo nuevo y la borra
+> al final. No hace falta hacer nada manual.
 
 ### 3. Crear los usuarios del taller
 
@@ -49,6 +55,9 @@ npm run dev
 
 Si faltan las variables de entorno la app avisa en pantalla en vez de romperse.
 
+> `node_modules/` no va en el repo ni en el .zip: son binarios que dependen
+> del sistema operativo. Siempre se genera de nuevo con `npm install`.
+
 ## Cómo está armado
 
 ```
@@ -62,14 +71,34 @@ frontend/src
 
 ### Datos
 
-Una sola tabla `ingresos`. El booleano `finalizado` decide dónde aparece:
+Tres tablas relacionadas:
 
-| `finalizado` | Pantalla | Qué significa |
-|---|---|---|
-| `false` | En el taller | Ingreso empezado, el auto sigue adentro |
-| `true` | Historial | Trabajo cerrado |
+| Tabla | Qué guarda |
+|---|---|
+| `clientes` | Nombre y teléfono |
+| `vehiculos` | Patente (única) y modelo, ligado a un cliente |
+| `visitas` | Una fila por cada paso del vehículo por el taller: motivo, diagnóstico, trabajos, costos, mecánico y `estado` |
 
-El buscador pega contra `busqueda`, una columna generada que concatena patente, cliente, vehículo, trabajos, motivo y diagnóstico, con índice trigram.
+El `estado` de una visita es uno de: `Pendiente`, `En reparación`, `Finalizado`, `Entregado`.
+El estado *actual* de un vehículo es el de su visita más reciente.
+
+La vista `vehiculos_resumen` da un vehículo por fila con los datos de su
+última visita — la usan Inicio, Historial, Pendientes, Buscar y el Tablero.
+Para ver el historial completo de un auto (todas sus visitas), la Ficha del
+vehículo consulta directamente la tabla `visitas`.
+
+### Pantallas
+
+- **Inicio** — resumen del taller y accesos directos.
+- **Nuevo ingreso** — carga o continúa una visita.
+- **En el taller** — visitas sin entregar.
+- **Historial** — vehículos con la última visita entregada; cada uno abre
+  su ficha con todo el historial.
+- **Buscar** — por patente, cliente, vehículo o lo hecho al auto.
+- **Tablero** — las visitas activas agrupadas por estado, con un botón para
+  avanzarlas a la siguiente etapa.
+- **Reportes** — facturación de los últimos meses y desempeño por mecánico,
+  calculados sobre las visitas entregadas.
 
 ## Comandos
 

@@ -37,6 +37,18 @@ const TRAZOS = {
     </>
   ),
   salir: <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />,
+  tablero: (
+    <>
+      <rect x="3" y="4" width="18" height="16" rx="2" />
+      <path d="M9 4v16M15 4v16M3 10h4M17 10h4M3 15h4M17 15h4" />
+    </>
+  ),
+  grafico: (
+    <>
+      <path d="M3 3v16a2 2 0 0 0 2 2h16" />
+      <path d="M7 15l4-5 3 3 5-7" />
+    </>
+  ),
   izquierda: <path d="M19 12H5M12 19l-7-7 7-7" />,
   derecha: <path d="M5 12h14M12 5l7 7-7 7" />,
   chevron: <path d="m9 18 6-6-6-6" />,

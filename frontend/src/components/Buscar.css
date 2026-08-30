@@ -92,6 +92,15 @@
     transform var(--dur-fast) var(--ease-out);
 }
 
+.resultado--clickeable {
+  cursor: pointer;
+}
+
+.resultado--clickeable:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 @media (hover: hover) and (pointer: fine) {
   .resultado:hover {
     transform: translateY(var(--lift));

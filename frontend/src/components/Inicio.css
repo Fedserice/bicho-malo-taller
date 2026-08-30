@@ -175,6 +175,12 @@
 .inicio__acciones > *:nth-child(4) {
   animation-delay: 215ms;
 }
+.inicio__acciones > *:nth-child(5) {
+  animation-delay: 260ms;
+}
+.inicio__acciones > *:nth-child(6) {
+  animation-delay: 305ms;
+}
 
 .tile__icono {
   display: grid;
