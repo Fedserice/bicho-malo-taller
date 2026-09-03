@@ -136,13 +136,13 @@
   width: 100%;
   max-width: var(--page-max);
   margin: 0 auto;
-  padding: 28px 16px 64px;
+  padding: 28px 16px 112px;
   animation: bm-rise var(--dur) var(--ease-out);
 }
 
 @media (max-width: 560px) {
   .app__contenido {
-    padding: 20px 14px 56px;
+    padding: 20px 14px 100px;
   }
 }
 

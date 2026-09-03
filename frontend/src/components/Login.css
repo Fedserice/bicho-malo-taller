@@ -1,122 +1,225 @@
-/* --- CONTENEDOR CENTRADO EN PANTALLA --- */
-.login-wrapper {
-  min-height: 80vh;
+/* ============================================================
+   Login — portón de entrada al taller
+
+   Dos paneles: a la izquierda la chapa patente hace de marca
+   (ya existe como componente, se reusa en grande); a la derecha
+   el formulario, como si fuera la ventanilla de recepción.
+   ============================================================ */
+
+.login {
+  position: relative;
+  min-height: 100vh;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  align-items: stretch;
+  background: var(--bg);
+  overflow: hidden;
 }
 
-/* --- TARJETA DE LOGIN --- */
-.login-card {
-  background-color: #1e42b0;
+/* Franja diagonal de fondo, como la pintura de piso de un box */
+.franja {
+  position: absolute;
+  inset: -20% -10%;
+  background: repeating-linear-gradient(
+    -18deg,
+    var(--accent-soft) 0px,
+    var(--accent-soft) 3px,
+    transparent 3px,
+    transparent 46px
+  );
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.login__grid {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
   width: 100%;
-  max-width: 400px;
-  border-radius: 12px;
-  padding: 32px 28px;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1),
-              0 8px 10px -6px rgba(0, 0, 0, 0.05);
+  max-width: 1040px;
+  margin: 0 auto;
 }
 
-/* --- ENCABEZADO Y LOGO --- */
-.login-header {
-  text-align: center;
-  margin-bottom: 28px;
+@media (max-width: 860px) {
+  .login__grid {
+    grid-template-columns: 1fr;
+  }
 }
 
-.login-icon {
-  font-size: 2.2rem;
-  background-color: #f1f5f9;
-  width: 60px;
-  height: 60px;
-  line-height: 60px;
-  border-radius: 50%;
-  margin: 0 auto 12px auto;
+/* ------------------------------------------------------------
+   Panel de marca
+   ------------------------------------------------------------ */
+
+.login__marca {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 30px;
+  padding: 56px 48px;
+  background: var(--ink);
+  color: var(--ink-inv);
 }
 
-.login-header h1 {
-  font-size: 1.6rem;
-  color: #0f172a;
-  margin: 0 0 4px 0;
-  font-weight: 800;
-  letter-spacing: -0.02em;
+@media (max-width: 860px) {
+  .login__marca {
+    padding: 44px 28px 32px;
+  }
 }
 
-.login-header p {
-  font-size: 0.9rem;
-  color: #64748b;
+.login__marca-top {
+  align-self: flex-start;
+}
+
+.login__marca-texto h1 {
+  display: flex;
+  flex-direction: column;
+  color: var(--ink-inv);
+  font-size: clamp(2.4rem, 1.6rem + 3vw, 3.4rem);
+  line-height: 0.94;
+}
+
+.login__marca-texto h1 span {
+  color: var(--accent-inv);
+}
+
+.login__marca-texto p {
+  margin-top: 14px;
+  max-width: 34ch;
+  color: color-mix(in srgb, var(--ink-inv) 68%, transparent);
+  font-size: 0.98rem;
+  line-height: 1.5;
+}
+
+.login__lista {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+  list-style: none;
+  padding: 0;
   margin: 0;
 }
 
-/* --- FORMULARIO Y CAMPOS --- */
-.login-form {
+.login__lista li {
   display: flex;
-  flex-direction: column;
-  gap: 18px;
+  align-items: center;
+  gap: 11px;
+  font-size: 0.92rem;
+  color: color-mix(in srgb, var(--ink-inv) 82%, transparent);
 }
 
-.input-group {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  text-align: left;
+.login__lista .icon {
+  flex: none;
+  padding: 7px;
+  border-radius: var(--r);
+  background: color-mix(in srgb, var(--ink-inv) 10%, transparent);
+  color: var(--accent-inv);
 }
 
-.input-group label {
+/* ------------------------------------------------------------
+   Panel de acceso
+   ------------------------------------------------------------ */
+
+.login__acceso {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  padding: 56px 40px;
+}
+
+@media (max-width: 860px) {
+  .login__acceso {
+    padding: 36px 24px 48px;
+  }
+}
+
+.login__caja {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+  max-width: 360px;
+  padding: 30px 26px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-xl);
+  box-shadow: var(--shadow-2);
+}
+
+.login__caja-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.login__escudo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--r-lg);
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+}
+
+.login__caja-head h2 {
+  font-size: 1.3rem;
+}
+
+.login__caja-head p {
+  margin-top: 2px;
+  font-size: 0.85rem;
+  color: var(--ink-3);
+}
+
+.login__form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.login__clave {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.login__clave input {
+  width: 100%;
+  padding-right: 42px;
+}
+
+.login__ver {
+  position: absolute;
+  right: 4px;
+  color: var(--ink-3);
+}
+
+.login__error {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--danger-line);
+  border-radius: var(--r);
+  background: var(--danger-soft);
+  color: var(--danger);
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.login__error .icon {
+  flex: none;
+  margin-top: 1px;
+}
+
+.login__pie {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--ink-3);
   font-size: 0.8rem;
-  font-weight: 700;
-  color: #475569;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.input-group input {
-  padding: 12px 14px;
-  border: 1px solid #cbd5e1;
-  border-radius: 8px;
-  font-size: 0.95rem;
-  background-color: #f8fafc;
-  color: #0f172a;
-  outline: none;
-  transition: all 0.2s ease;
-}
-
-.input-group input:focus {
-  border-color: #2563eb;
-  background-color: #ffffff;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
-}
-
-/* Placeholders */
-.input-group input::placeholder {
-  font-family: 'Inter', Roboto, sans-serif;
-  font-size: 0.88rem;
-  font-style: italic;
-  color: #522323;
-}
-
-/* --- BOTÓN DE INGRESO --- */
-.btn-login {
-  margin-top: 6px;
-  padding: 13px;
-  font-size: 1rem;
-  font-weight: 700;
-  color: #ffffff;
-  background-color: #522323;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
-}
-
-.btn-login:hover {
-  background-color: #1242c5;
-  box-shadow: 0 6px 12px -2px rgba(37, 99, 235, 0.3);
-}
-
-.btn-login:active {
-  transform: scale(0.98);
 }

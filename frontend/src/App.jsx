@@ -10,6 +10,7 @@ import Kanban from "./components/Kanban";
 import Reportes from "./components/Reportes";
 import FaltaConfig from "./components/FaltaConfig";
 import Icon from "./ui/Icon";
+import BotonFlotante from "./ui/BotonFlotante";
 import { Cargando } from "./ui/Estados";
 import { useToast } from "./ui/useToast";
 import { supabase, hayConfig } from "./lib/supabase";
@@ -42,6 +43,11 @@ function App() {
     setPantallaPrevia(pantalla);
     setVehiculoSeleccionado(ingreso.vehiculoId ?? ingreso.id);
     setPantalla("ficha");
+  }
+
+  function irANuevoIngreso() {
+    setIngresoEnEdicion(null);
+    setPantalla("nuevo");
   }
 
   // Sesión guardada en el navegador + cambios de login/logout
@@ -145,10 +151,6 @@ function App() {
       <main className="app__contenido" key={pantalla}>
         {pantalla === "inicio" && (
           <Inicio
-            onNuevoIngreso={() => {
-              setIngresoEnEdicion(null);
-              setPantalla("nuevo");
-            }}
             onBuscar={() => setPantalla("buscar")}
             onHistorial={() => setPantalla("historial")}
             onPendientes={() => setPantalla("pendientes")}
@@ -175,10 +177,7 @@ function App() {
               setIngresoEnEdicion(ingreso);
               setPantalla("nuevo");
             }}
-            onNuevoIngreso={() => {
-              setIngresoEnEdicion(null);
-              setPantalla("nuevo");
-            }}
+            onNuevoIngreso={irANuevoIngreso}
           />
         )}
 
@@ -186,6 +185,8 @@ function App() {
 
         {pantalla === "reportes" && <Reportes />}
       </main>
+
+      {pantalla !== "nuevo" && <BotonFlotante onClick={irANuevoIngreso} />}
     </div>
   );
 }

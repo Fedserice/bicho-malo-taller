@@ -13,7 +13,7 @@ const pesos = new Intl.NumberFormat("es-AR", {
 
 const RESUMEN_VACIO = { enTaller: 0, cerrados: 0, facturado: 0 };
 
-function Inicio({ onNuevoIngreso, onBuscar, onHistorial, onPendientes, onKanban, onReportes }) {
+function Inicio({ onBuscar, onHistorial, onPendientes, onKanban, onReportes }) {
   const consulta = useCallback(() => obtenerResumen(), []);
   const { cargando, error, datos } = useConsulta(consulta, RESUMEN_VACIO);
 
@@ -65,17 +65,6 @@ function Inicio({ onNuevoIngreso, onBuscar, onHistorial, onPendientes, onKanban,
 
       {/* Acciones */}
       <section className="inicio__acciones" aria-label="Acciones">
-        <button type="button" className="tile tile--destacado" onClick={onNuevoIngreso}>
-          <span className="tile__icono">
-            <Icon name="mas" size={22} />
-          </span>
-          <span className="tile__texto">
-            <span className="tile__titulo">Nuevo ingreso</span>
-            <span className="tile__desc">Cargar un vehículo que entra al taller</span>
-          </span>
-          <Icon name="derecha" size={20} className="tile__flecha" />
-        </button>
-
         <button type="button" className="tile" onClick={onBuscar}>
           <span className="tile__icono">
             <Icon name="buscar" size={20} />

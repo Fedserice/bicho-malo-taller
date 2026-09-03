@@ -50,10 +50,8 @@
 }
 
 .cifra__label {
-  font-size: 0.7rem;
+  font-size: 0.82rem;
   font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
   color: var(--ink-3);
 }
 
@@ -205,11 +203,9 @@
 
 .tile__titulo {
   font-family: var(--font-display);
-  font-size: 1.35rem;
+  font-size: 1.4rem;
   font-weight: 700;
-  line-height: 1.05;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
+  line-height: 1.02;
 }
 
 .tile__desc {
@@ -258,45 +254,6 @@
   transform: scale(0.99);
 }
 
-/* Acción principal: ocupa las dos columnas y es la única en grafito */
-.tile--destacado {
-  grid-column: span 2;
-  padding: 26px 24px;
-  border-color: var(--ink);
-  background: var(--ink);
-  color: var(--ink-inv);
-}
-
-.tile--destacado .tile__icono {
-  width: 50px;
-  height: 50px;
-  background: var(--accent-inv);
-  color: var(--ink);
-}
-
-.tile--destacado .tile__titulo {
-  font-size: 1.7rem;
-}
-
-.tile--destacado .tile__desc {
-  color: color-mix(in srgb, var(--ink-inv) 62%, transparent);
-}
-
-.tile--destacado .tile__flecha {
-  color: var(--accent-inv);
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .tile--destacado:hover {
-    border-color: var(--accent-inv);
-  }
-
-  .tile--destacado:hover .tile__icono {
-    background: var(--accent);
-    color: var(--on-accent);
-  }
-}
-
 .tile--ancho {
   grid-column: span 2;
 }
@@ -306,16 +263,7 @@
     grid-template-columns: 1fr;
   }
 
-  .tile--destacado,
   .tile--ancho {
     grid-column: span 1;
-  }
-
-  .tile--destacado {
-    padding: 22px 20px;
-  }
-
-  .tile--destacado .tile__titulo {
-    font-size: 1.5rem;
   }
 }

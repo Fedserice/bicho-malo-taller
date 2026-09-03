@@ -189,11 +189,9 @@
 }
 
 .cuenta__total-label {
-  font-size: 0.72rem;
+  font-size: 0.85rem;
   font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: color-mix(in srgb, var(--ink-inv) 65%, transparent);
+  color: color-mix(in srgb, var(--ink-inv) 70%, transparent);
 }
 
 .cuenta__total-valor {
@@ -215,11 +213,10 @@
 }
 
 .ficha__historial-titulo {
-  font-size: 0.78rem;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--ink-3);
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--ink-2);
 }
 
 .visita__head {

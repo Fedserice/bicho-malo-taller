@@ -1,73 +1,76 @@
 /* ============================================================
    BICHO MALO TALLER — Fundaciones del sistema de diseño
-   Grafito acero + ámbar industrial · Barlow Condensed / Inter
+   Concreto de box + óxido quemado · Big Shoulders Display / IBM Plex Sans
    ============================================================ */
 
 :root {
-  /* --- Superficies y líneas --- */
-  --bg: #eceff3;
-  --surface: #ffffff;
-  --surface-2: #f5f7f9;
-  --surface-3: #eaeef2;
-  --line: #dde2e8;
-  --line-strong: #c5ccd6;
+  /* --- Superficies y líneas: piso de concreto del box, gris neutro
+     (el óxido queda para el acento, no para bañar toda la pantalla) --- */
+  --bg: #e3e4e0;
+  --surface: #fafaf8;
+  --surface-2: #eeeeea;
+  --surface-3: #e1e1db;
+  --line: #cfcfc5;
+  --line-strong: #b2b2a4;
 
-  /* --- Tinta --- */
-  --ink: #0f1419;
-  --ink-2: #39424e;
-  --ink-3: #626b79;
-  --ink-inv: #ffffff;
+  /* --- Tinta: grafito neutro --- */
+  --ink: #1c1d1b;
+  --ink-2: #45463f;
+  --ink-3: #616256;
+  --ink-inv: #fafaf8;
 
-  /* --- Acento industrial ---
-     `--on-accent` es lo que se apoya sobre el ámbar: siempre grafito,
-     como un cartel de obra. Blanco sobre ámbar no llega a AA.
-     `--accent-inv` es el ámbar que se usa sobre los paneles invertidos. */
-  --accent: #e8690b;
-  /* El hover aclara en vez de oscurecer: con texto grafito encima,
-     oscurecer el ámbar rompía el contraste. */
-  --accent-hover: #ff7d1a;
-  --accent-soft: #fdf0e4;
-  --accent-line: #f5c79a;
-  --accent-ring: rgba(232, 105, 11, 0.26);
-  --accent-ink: #8a3d02;
-  --accent-inv: #ff8a2b;
-  --on-accent: #10141a;
+  /* --- Acento: óxido quemado, como el fierro viejo del taller ---
+     `--on-accent` va oscuro encima: el óxido es demasiado medio-tono
+     para blanco. `--accent-inv` es el que se apoya sobre paneles oscuros. */
+  --accent: #d4661f;
+  --accent-hover: #e2782f;
+  --accent-soft: #f5e1ce;
+  --accent-line: #e3ad7c;
+  --accent-ring: rgba(203, 90, 23, 0.28);
+  --accent-ink: #7a3308;
+  --accent-inv: #ff8a3d;
+  --on-accent: #1c150d;
 
   /* --- Semánticos de estado --- */
-  --ok: #17803d;
-  --ok-soft: #e4f5ea;
-  --ok-line: #a7dcba;
-  --info: #1d4ed8;
-  --info-soft: #e7edfd;
-  --info-line: #b3c6f7;
-  --neutral: #4d5866;
-  --neutral-soft: #eaedf1;
-  --neutral-line: #cdd4dd;
-  --danger: #c62a24;
-  --danger-hover: #a52220;
-  --danger-soft: #fceceb;
-  --danger-line: #f0b6b3;
+  --ok: #3f7d46;
+  --ok-soft: #e3eee0;
+  --ok-line: #a9c9a2;
+  --info: #2e5c8a;
+  --info-soft: #e2eaf1;
+  --info-line: #a9c0d6;
+  --neutral: #5b5142;
+  --neutral-soft: #ede7d8;
+  --neutral-line: #d2c7ac;
+  --danger: #9a2a1e;
+  --danger-hover: #7e2117;
+  --danger-soft: #f1dad2;
+  --danger-line: #dcaa9b;
 
-  /* --- Patente Mercosur --- */
+  /* --- Patente Mercosur: azul y blanco reales, no de sistema --- */
   --plate-blue: #1b3fa8;
   --plate-bg: #ffffff;
   --plate-ink: #0f1419;
 
-  /* --- Sombras --- */
-  --shadow-1: 0 1px 2px rgba(15, 20, 25, 0.06), 0 1px 1px rgba(15, 20, 25, 0.04);
-  --shadow-2: 0 4px 12px -2px rgba(15, 20, 25, 0.1), 0 2px 4px -2px rgba(15, 20, 25, 0.06);
-  --shadow-3: 0 18px 36px -10px rgba(15, 20, 25, 0.2), 0 6px 12px -6px rgba(15, 20, 25, 0.1);
+  /* --- Sombras: la de reposo es casi plana (una línea), la que
+     flota (menú, aviso) es un sello duro — un solo golpe gráfico,
+     no el mismo desenfoque gris repetido en cada tarjeta. --- */
+  --shadow-1: 0 1px 2px rgba(33, 28, 22, 0.08);
+  --shadow-2: 0 6px 16px -4px rgba(33, 28, 22, 0.18), 0 2px 6px -2px rgba(33, 28, 22, 0.12);
+  --shadow-3: 4px 4px 0 0 var(--ink);
 
-  /* --- Radios --- */
-  --r-sm: 6px;
-  --r: 10px;
-  --r-lg: 14px;
-  --r-xl: 20px;
+  /* --- Radios: cortados, como cartulina de ticket, no burbuja de app --- */
+  --r-sm: 3px;
+  --r: 5px;
+  --r-lg: 6px;
+  --r-xl: 9px;
   --r-pill: 999px;
 
-  /* --- Tipografía --- */
-  --font-display: "Barlow Condensed", "Arial Narrow", "Segoe UI", system-ui, sans-serif;
-  --font-ui: "Inter", system-ui, "Segoe UI", Roboto, -apple-system, sans-serif;
+  /* --- Tipografía ---
+     Big Shoulders Display: letrero de chapa metálica, angosta y
+     pesada — la voz de los títulos. IBM Plex Sans para todo lo
+     demás: nace de manuales técnicos, no de una app de moda. */
+  --font-display: "Manrope", "Segoe UI", system-ui, sans-serif;
+  --font-ui: "IBM Plex Sans", system-ui, "Segoe UI", Roboto, -apple-system, sans-serif;
 
   /* --- Movimiento --- */
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
@@ -96,46 +99,46 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #0c0f13;
-    --surface: #151a21;
-    --surface-2: #1b2129;
-    --surface-3: #222933;
-    --line: #262e39;
-    --line-strong: #3a4552;
+    --bg: #16171f;
+    --surface: #1e1f1c;
+    --surface-2: #24251f;
+    --surface-3: #2e2f27;
+    --line: #383930;
+    --line-strong: #4c4d40;
 
-    --ink: #f1f4f8;
-    --ink-2: #b7c1cd;
-    --ink-3: #7e8998;
-    --ink-inv: #0f1419;
+    --ink: #eeefe9;
+    --ink-2: #c4c5b9;
+    --ink-3: #8f9084;
+    --ink-inv: #1e1f1c;
 
-    --accent: #ff8a2b;
-    --accent-hover: #ffa254;
-    --accent-soft: rgba(255, 138, 43, 0.13);
-    --accent-line: rgba(255, 138, 43, 0.34);
-    --accent-ring: rgba(255, 138, 43, 0.3);
-    --accent-ink: #ffb877;
-    /* En oscuro los paneles invertidos son claros: el ámbar se hunde */
-    --accent-inv: #b34d00;
+    --accent: #ff8a3d;
+    --accent-hover: #ffa564;
+    --accent-soft: rgba(255, 138, 61, 0.14);
+    --accent-line: rgba(255, 138, 61, 0.36);
+    --accent-ring: rgba(255, 138, 61, 0.3);
+    --accent-ink: #ffb87c;
+    /* En oscuro los paneles invertidos son claros: el óxido se hunde */
+    --accent-inv: #a83f0a;
 
-    --ok: #4ade80;
-    --ok-soft: rgba(74, 222, 128, 0.13);
-    --ok-line: rgba(74, 222, 128, 0.32);
-    --info: #7ba6ff;
-    --info-soft: rgba(123, 166, 255, 0.13);
-    --info-line: rgba(123, 166, 255, 0.32);
-    --neutral: #a4afbd;
-    --neutral-soft: rgba(164, 175, 189, 0.12);
-    --neutral-line: rgba(164, 175, 189, 0.28);
-    --danger: #ff6b64;
-    --danger-hover: #ff8a84;
-    --danger-soft: rgba(255, 107, 100, 0.13);
-    --danger-line: rgba(255, 107, 100, 0.32);
+    --ok: #6bc276;
+    --ok-soft: rgba(107, 194, 118, 0.14);
+    --ok-line: rgba(107, 194, 118, 0.32);
+    --info: #7fa8d6;
+    --info-soft: rgba(127, 168, 214, 0.14);
+    --info-line: rgba(127, 168, 214, 0.32);
+    --neutral: #b3a88f;
+    --neutral-soft: rgba(179, 168, 143, 0.12);
+    --neutral-line: rgba(179, 168, 143, 0.28);
+    --danger: #e0665a;
+    --danger-hover: #ea8478;
+    --danger-soft: rgba(224, 102, 90, 0.14);
+    --danger-line: rgba(224, 102, 90, 0.32);
 
-    --plate-blue: #2a55c9;
+    --plate-blue: #3d63d6;
 
     --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
-    --shadow-2: 0 4px 12px -2px rgba(0, 0, 0, 0.5), 0 2px 4px -2px rgba(0, 0, 0, 0.4);
-    --shadow-3: 0 18px 36px -10px rgba(0, 0, 0, 0.6), 0 6px 12px -6px rgba(0, 0, 0, 0.45);
+    --shadow-2: 0 6px 16px -4px rgba(0, 0, 0, 0.5), 0 2px 6px -2px rgba(0, 0, 0, 0.4);
+    --shadow-3: 4px 4px 0 0 rgba(0, 0, 0, 0.6);
 
     color-scheme: dark;
   }
@@ -192,6 +195,11 @@ button:disabled {
 
 /* ------------------------------------------------------------
    Tipografía base
+
+   Manrope: geométrica, simple, sin la carga "cartel de chapa" de
+   una condensada. El peso lo pone el grosor, no las versalitas
+   ni el tracking — un nombre de auto o de cliente se puede leer
+   arriba de un título sin gritar en mayúsculas.
    ------------------------------------------------------------ */
 
 h1,
@@ -199,23 +207,24 @@ h2,
 h3 {
   font-family: var(--font-display);
   color: var(--ink);
-  font-weight: 700;
-  line-height: 1.05;
-  letter-spacing: 0.01em;
-  text-transform: uppercase;
+  font-weight: 800;
+  line-height: 1.08;
+  letter-spacing: -0.015em;
   margin: 0;
 }
 
 h1 {
-  font-size: clamp(1.9rem, 1.4rem + 2vw, 2.6rem);
+  font-size: clamp(1.85rem, 1.45rem + 1.7vw, 2.4rem);
 }
 
 h2 {
-  font-size: 1.35rem;
+  font-size: 1.3rem;
+  font-weight: 700;
 }
 
 h3 {
   font-size: 1.1rem;
+  font-weight: 700;
 }
 
 p {
@@ -233,13 +242,11 @@ strong {
   letter-spacing: -0.01em;
 }
 
-/* Etiqueta estructural: eyebrow en versalitas */
+/* Renglón de contexto: una frase lisa, no una etiqueta en mayúsculas */
 .eyebrow {
   font-family: var(--font-ui);
-  font-size: 0.7rem;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+  font-size: 0.85rem;
+  font-weight: 500;
   color: var(--ink-3);
 }
 
