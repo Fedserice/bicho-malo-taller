@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useReducer, useState } from "react";
 import Login from "./components/Login";
 import Inicio from "./components/Inicio";
 import NuevoIngreso from "./components/NuevoIngreso";
@@ -13,6 +13,33 @@ import { useToast } from "./ui/useToast";
 import { supabase, hayConfig } from "./lib/supabase";
 import "./App.css";
 
+/**
+ * Navegación. La ficha y el formulario se abren desde varios lados y se
+ * encadenan (tablero → ficha → editar), así que "Volver" tiene que
+ * deshacer el camino real: se guarda una pila de pantallas anteriores.
+ */
+function navegar(estado, accion) {
+  switch (accion.tipo) {
+    case "ir":
+      if (accion.destino === estado.pantalla) return estado;
+      return { pantalla: accion.destino, pila: [...estado.pila, estado.pantalla] };
+
+    case "volver": {
+      if (estado.pila.length === 0) return estado;
+      return {
+        pantalla: estado.pila[estado.pila.length - 1],
+        pila: estado.pila.slice(0, -1),
+      };
+    }
+
+    case "reiniciar":
+      return { pantalla: "inicio", pila: [] };
+
+    default:
+      return estado;
+  }
+}
+
 // El Panel concentra buscador y tablero, así que quedan pocas pantallas.
 const PANTALLAS = {
   inicio: "Inicio",
@@ -25,24 +52,31 @@ const PANTALLAS = {
 function App() {
   const [sesion, setSesion] = useState(null);
   const [revisandoSesion, setRevisandoSesion] = useState(hayConfig);
-  const [pantalla, setPantalla] = useState("inicio");
-  // Pila de pantallas anteriores: la ficha y el formulario se abren desde
-  // varios lados y se encadenan (tablero → ficha → editar), así que
-  // "Volver" tiene que deshacer el camino real, no uno fijo.
-  const [pila, setPila] = useState([]);
+  const [{ pantalla, pila }, despachar] = useReducer(navegar, {
+    pantalla: "inicio",
+    pila: [],
+  });
   const [ingresoEnEdicion, setIngresoEnEdicion] = useState(null);
   const [vehiculoSeleccionado, setVehiculoSeleccionado] = useState(null);
   const avisar = useToast();
 
+  // Cada pantalla nueva deja una entrada en el historial del navegador,
+  // así el botón "atrás" del mouse y el del navegador funcionan igual
+  // que el de la barra.
   function ir(destino) {
-    setPila((previas) => [...previas, pantalla]);
-    setPantalla(destino);
+    if (destino === pantalla) return;
+    window.history.pushState({ bm: destino }, "");
+    despachar({ tipo: "ir", destino });
   }
 
   function volver() {
-    const destino = pila[pila.length - 1] ?? "inicio";
-    setPila((previas) => previas.slice(0, -1));
-    setPantalla(destino);
+    // Se delega en el historial para que los tres caminos de vuelta
+    // (barra, mouse, navegador) pasen por el mismo lugar.
+    if (pila.length > 0) {
+      window.history.back();
+    } else {
+      despachar({ tipo: "reiniciar" });
+    }
   }
 
   function abrirFicha(ingreso) {
@@ -66,6 +100,16 @@ function App() {
     setIngresoEnEdicion(datosVehiculo);
     ir("nuevo");
   }
+
+  // Atrás del navegador y del mouse (botón 4)
+  useEffect(() => {
+    function alRetroceder() {
+      despachar({ tipo: "volver" });
+    }
+
+    window.addEventListener("popstate", alRetroceder);
+    return () => window.removeEventListener("popstate", alRetroceder);
+  }, []);
 
   // Sesión guardada en el navegador + cambios de login/logout
   useEffect(() => {
@@ -104,7 +148,9 @@ function App() {
   }
 
   const titulo = PANTALLAS[pantalla] ?? PANTALLAS.inicio;
-  const puedeVolver = pila.length > 0;
+  // Fuera del inicio siempre hay salida, aunque la pila haya quedado
+  // vacía: en ese caso "Volver" cae al inicio.
+  const puedeVolver = pantalla !== "inicio" || pila.length > 0;
 
   async function cerrarSesion() {
     const { error } = await supabase.auth.signOut();
@@ -114,8 +160,7 @@ function App() {
       return;
     }
 
-    setPantalla("inicio");
-    setPila([]);
+    despachar({ tipo: "reiniciar" });
     setIngresoEnEdicion(null);
     setVehiculoSeleccionado(null);
     avisar("Sesión cerrada", "info");
@@ -169,8 +214,8 @@ function App() {
       <main className="app__contenido" key={pantalla}>
         {pantalla === "inicio" && (
           <Inicio
-            onHistorial={() => setPantalla("historial")}
-            onReportes={() => setPantalla("reportes")}
+            onHistorial={() => ir("historial")}
+            onReportes={() => ir("reportes")}
             onAbrirFicha={abrirFicha}
             onEditar={editarTrabajo}
             onNuevoIngreso={irANuevoIngreso}
