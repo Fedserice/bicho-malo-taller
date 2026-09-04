@@ -1,5 +1,7 @@
 import { useCallback } from "react";
 import Icon from "../ui/Icon";
+import Patente from "../ui/Patente";
+import EstadoChip from "../ui/EstadoChip";
 import { Cargando, ErrorDatos } from "../ui/Estados";
 import { obtenerReportes } from "../lib/datos";
 import { useConsulta } from "../lib/useConsulta";
@@ -19,7 +21,7 @@ function Reportes() {
   if (error) return <ErrorDatos mensaje={error} />;
   if (!datos) return null;
 
-  const { totalFacturado, trabajosEntregados, facturacionMensual, porMecanico } = datos;
+  const { totalFacturado, trabajosEntregados, facturacionMensual, porMecanico, saldos } = datos;
   const maximoMensual = Math.max(1, ...facturacionMensual.map((m) => m.total));
   const maximoMecanico = Math.max(1, ...porMecanico.map((m) => m.facturado));
 
@@ -44,6 +46,87 @@ function Reportes() {
           <span className="cifra__valor num">{trabajosEntregados}</span>
           <span className="cifra__pie">en total</span>
         </div>
+
+        <div className={`cifra ${saldos.totalSaldos > 0 ? "cifra--deuda" : ""}`.trim()}>
+          <span className="cifra__label">Saldos pendientes</span>
+          <span className="cifra__valor cifra__valor--monto num">
+            {pesos.format(saldos.totalSaldos)}
+          </span>
+          <span className="cifra__pie">
+            {saldos.deudores.length === 1
+              ? "1 cliente debe"
+              : `${saldos.deudores.length} clientes deben`}
+          </span>
+        </div>
+      </section>
+
+      {/* SALDOS PENDIENTES — quién debe y por qué trabajo */}
+      <section className="bloque bloque--ancho reportes__bloque">
+        <h2 className="bloque__titulo">
+          <Icon name="peso" size={17} />
+          Saldos pendientes
+        </h2>
+
+        {saldos.trabajos.length === 0 ? (
+          <p className="reportes__vacio">
+            No hay plata pendiente de cobro: todos los trabajos están saldados.
+          </p>
+        ) : (
+          <>
+            <h3 className="reportes__subtitulo">Deudores</h3>
+            <ul className="deudores">
+              {saldos.deudores.map((d) => (
+                <li className="deudor" key={d.cliente}>
+                  <span className="deudor__nombre">
+                    <Icon name="persona" size={15} />
+                    {d.cliente}
+                  </span>
+                  {d.telefono && <span className="deudor__tel num">{d.telefono}</span>}
+                  <span className="deudor__trabajos">
+                    {d.trabajos} {d.trabajos === 1 ? "trabajo" : "trabajos"}
+                  </span>
+                  <span className="deudor__saldo num">{pesos.format(d.saldo)}</span>
+                </li>
+              ))}
+            </ul>
+
+            <h3 className="reportes__subtitulo">Detalle por trabajo</h3>
+            <ul className="saldos">
+              {saldos.trabajos.map((t) => (
+                <li className="saldo" key={t.id}>
+                  <Patente valor={t.patente} tamano="sm" />
+
+                  <span className="saldo__id">
+                    <span className="saldo__vehiculo">{t.vehiculo || "Vehículo sin cargar"}</span>
+                    <span className="saldo__cliente">
+                      {t.cliente}
+                      {t.fecha && (
+                        <>
+                          <span className="saldo__punto" aria-hidden="true" />
+                          <span className="num">{t.fecha}</span>
+                        </>
+                      )}
+                    </span>
+                  </span>
+
+                  <EstadoChip estado={t.estado} />
+
+                  <span className="saldo__cuentas num">
+                    <span className="saldo__linea">Total {pesos.format(t.total)}</span>
+                    <span className="saldo__linea">Cobrado {pesos.format(t.cobrado)}</span>
+                  </span>
+
+                  <span className="saldo__monto num">{pesos.format(t.saldo)}</span>
+                </li>
+              ))}
+            </ul>
+
+            <div className="cuenta__total cuenta__total--deuda saldos__total">
+              <span className="cuenta__total-label">Total a cobrar</span>
+              <span className="cuenta__total-valor num">{pesos.format(saldos.totalSaldos)}</span>
+            </div>
+          </>
+        )}
       </section>
 
       <section className="bloque bloque--ancho reportes__bloque">

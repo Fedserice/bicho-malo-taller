@@ -76,46 +76,6 @@
   color: var(--ink-3);
 }
 
-/* La cifra de autos en el taller es además el atajo a esa pantalla */
-.cifra--activa {
-  cursor: pointer;
-  border-color: var(--accent-line);
-  background: var(--accent-soft);
-  transition:
-    border-color var(--dur-fast) ease,
-    box-shadow var(--dur-fast) ease,
-    transform var(--dur-press) var(--ease-out);
-}
-
-.cifra--activa .cifra__valor,
-.cifra--activa .cifra__label {
-  color: var(--accent-ink);
-}
-
-.cifra--activa .cifra__pie {
-  color: var(--accent-ink);
-  opacity: 0.85;
-}
-
-.cifra--activa svg {
-  transition: transform var(--dur-fast) var(--ease-out);
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .cifra--activa:hover {
-    border-color: var(--accent);
-    box-shadow: var(--shadow-2);
-  }
-
-  .cifra--activa:hover svg {
-    transform: translateX(3px);
-  }
-}
-
-.cifra--activa:active {
-  transform: scale(0.985);
-}
-
 @media (max-width: 720px) {
   .inicio__cifras {
     grid-template-columns: 1fr 1fr;
@@ -266,4 +226,34 @@
   .tile--ancho {
     grid-column: span 1;
   }
+}
+
+/* ------------------------------------------------------------
+   Tablero embebido en el Panel
+   ------------------------------------------------------------ */
+
+.inicio__tablero {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.inicio__seccion-head {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.inicio__seccion-head h2 {
+  font-size: 1.3rem;
+}
+
+.inicio__seccion-head p {
+  font-size: 0.85rem;
+  color: var(--ink-3);
+}
+
+/* El buscador del Panel se separa del encabezado */
+.inicio .buscador {
+  margin-bottom: 4px;
 }

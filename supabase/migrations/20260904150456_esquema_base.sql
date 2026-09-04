@@ -1,8 +1,9 @@
 -- ============================================================
--- Bicho Malo Taller — esquema de base de datos (v2)
+-- Esquema base del taller
 --
--- Pegar entero en el SQL Editor de Supabase y ejecutar.
--- Es re-ejecutable: no rompe nada si ya se corrió antes.
+-- Todo el archivo es re-ejecutable (create ... if not exists,
+-- drop policy if exists), así que se puede aplicar sobre una base
+-- que ya tenga los datos cargados sin romper nada.
 --
 -- Modelo: clientes → vehículos (ficha única por patente) → visitas
 -- (una fila por cada paso del auto por el taller). Un vehículo

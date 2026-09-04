@@ -11,16 +11,62 @@ React 19 + Vite · Supabase (auth + Postgres).
 
 En [supabase.com](https://supabase.com) → **New project**. Anotá la contraseña de la base.
 
-### 2. Crear las tablas
+### 2. Aplicar las migraciones
 
-Supabase → **SQL Editor** → pegar entero el contenido de [`../supabase/schema.sql`](../supabase/schema.sql) y ejecutar.
+El esquema vive en [`../supabase/migrations/`](../supabase/migrations), un
+archivo por cambio. Se aplican con la CLI de Supabase:
 
-Crea `clientes`, `vehiculos`, `visitas`, `mecanicos`, la vista `vehiculos_resumen`
-y las políticas de RLS. Se puede volver a correr sin romper nada.
+```bash
+npx supabase link --project-ref TU_PROJECT_REF
+```
 
-> Si tu base todavía tiene la tabla vieja `ingresos` (versión anterior de
-> este sistema), el mismo script la migra sola al modelo nuevo y la borra
-> al final. No hace falta hacer nada manual.
+```bash
+npx supabase db push
+```
+
+El *project ref* es la parte del medio de la URL del proyecto
+(`https://TU_PROJECT_REF.supabase.co`). `db push` pide la contraseña de la
+base y aplica solo las migraciones que todavía no estén en el proyecto.
+
+Crea `clientes`, `vehiculos`, `visitas`, `mecanicos`, la vista
+`vehiculos_resumen` y las políticas de RLS.
+
+> **Base que ya se armó a mano.** Si el esquema se aplicó antes pegando
+> SQL en el editor, Supabase no tiene registro de esas migraciones y
+> `db push` va a querer correrlas todas. No es un problema: están escritas
+> para ser re-ejecutables (`create ... if not exists`, `drop policy if
+> exists`) y no tocan los datos cargados. Si preferís que no las vuelva a
+> correr, marcá la primera como ya aplicada:
+>
+> ```bash
+> npx supabase migration repair --status applied 20260904150456
+> ```
+
+> Si la base todavía tiene la tabla vieja `ingresos` (versión anterior de
+> este sistema), la migración del esquema base la vuelca sola al modelo
+> nuevo y la borra al final. No hace falta hacer nada manual.
+
+### Trabajar el esquema en local
+
+Con Docker andando se puede levantar una copia entera del proyecto en la
+máquina y probar las migraciones antes de tocar producción:
+
+```bash
+npx supabase start
+```
+
+```bash
+npx supabase db reset
+```
+
+`db reset` borra la base local y vuelve a aplicar todas las migraciones
+desde cero: es la forma de confirmar que corren en orden y sin errores.
+
+Para un cambio nuevo de esquema, nunca edites una migración ya aplicada:
+
+```bash
+npx supabase migration new nombre_del_cambio
+```
 
 ### 3. Crear los usuarios del taller
 

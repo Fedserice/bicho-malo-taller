@@ -17,33 +17,35 @@ const ESTADO_INICIAL = {
   diagnostico: "",
   trabajos: "",
   manoObra: "",
+  totalTrabajo: "",
   totalCobrado: "",
   mecanico: "",
-  estado: "Pendiente",
+  estado: "En reparación",
   pendientes: "",
   observaciones: "",
 };
 
+// Lo mínimo para identificar el auto y al dueño. Todo lo demás
+// (kilometraje, diagnóstico, importes, mecánico) se completa después,
+// mientras el vehículo está en el tablero.
 const OBLIGATORIOS = [
   ["patente", "Patente"],
   ["cliente", "Cliente"],
   ["telefono", "Teléfono"],
   ["vehiculo", "Vehículo"],
-  ["kilometraje", "Kilometraje"],
   ["fecha", "Fecha"],
-  ["motivo", "Motivo"],
-  ["diagnostico", "Diagnóstico"],
-  ["trabajos", "Trabajos realizados"],
-  ["manoObra", "Mano de obra"],
-  ["totalCobrado", "Total cobrado"],
-  ["mecanico", "Mecánico"],
-  ["estado", "Estado"],
-  ["pendientes", "Pendientes"],
-  ["observaciones", "Observaciones"],
 ];
 
+const pesos = new Intl.NumberFormat("es-AR", {
+  style: "currency",
+  currency: "ARS",
+  maximumFractionDigits: 0,
+});
+
 function NuevoIngreso({ onVolver, ingreso }) {
-  const [datos, setDatos] = useState(ingreso || ESTADO_INICIAL);
+  // `ingreso` puede ser una visita completa (editar) o solo los datos
+  // del vehículo (trabajo nuevo sobre una ficha que ya existe).
+  const [datos, setDatos] = useState({ ...ESTADO_INICIAL, ...(ingreso || {}) });
   const [faltantes, setFaltantes] = useState([]);
   const [guardando, setGuardando] = useState(null);
   const [ingresoPrevio, setIngresoPrevio] = useState(ingreso);
@@ -56,11 +58,15 @@ function NuevoIngreso({ onVolver, ingreso }) {
   // Si cambia el ingreso que se está editando, el formulario se rearma.
   if (ingreso !== ingresoPrevio) {
     setIngresoPrevio(ingreso);
-    setDatos(ingreso || ESTADO_INICIAL);
+    setDatos({ ...ESTADO_INICIAL, ...(ingreso || {}) });
     setFaltantes([]);
   }
 
   const esEdicion = Boolean(datos.id);
+  // Ficha existente a la que se le abre un trabajo nuevo: ya trae
+  // vehículo y cliente cargados, pero todavía no es una visita.
+  const esNuevoTrabajo = !datos.id && Boolean(datos.vehiculoId);
+  const puedeFinalizar = esEdicion && datos.estado === "En reparación";
 
   // El mecánico guardado se mantiene aunque ya no esté en la lista activa.
   const nombresMecanicos = (mecanicos ?? []).map((m) => m.nombre);
@@ -90,19 +96,41 @@ function NuevoIngreso({ onVolver, ingreso }) {
     });
   }
 
-  async function guardarEnTaller() {
-    if (!(datos.patente || "").trim() && !(datos.cliente || "").trim()) {
-      setFaltantes(["patente", "cliente"]);
-      avisar("Cargá al menos la patente o el cliente para guardar", "error");
-      formRef.current?.elements.patente?.focus();
-      return;
-    }
+  /** Marca los campos que faltan y avisa. Devuelve si se puede guardar. */
+  function validar() {
+    const pendientes = buscarFaltantes();
+    if (pendientes.length === 0) return true;
 
-    setGuardando("taller");
+    const claves = pendientes.map(([campo]) => campo);
+    setFaltantes(claves);
+
+    avisar(
+      pendientes.length === 1
+        ? `Falta completar: ${pendientes[0][1]}`
+        : `Faltan ${pendientes.length} campos por completar`,
+      "error"
+    );
+
+    const primero = formRef.current?.elements[claves[0]];
+    primero?.focus();
+    primero?.scrollIntoView({ block: "center", behavior: "smooth" });
+    return false;
+  }
+
+  // Acción principal. Un ingreso nuevo entra al tablero como
+  // "En reparación"; editando uno existente se conserva su estado.
+  async function guardar(e) {
+    e?.preventDefault();
+    if (!validar()) return;
+
+    setGuardando("guardar");
 
     try {
-      await guardarIngreso(datos, { finalizado: false });
-      avisar("Ingreso guardado en el taller", "ok");
+      await guardarIngreso(datos, {});
+      avisar(
+        esEdicion ? "Cambios guardados" : "Ingreso registrado. El vehículo ya está en el tablero.",
+        "ok"
+      );
       onVolver();
     } catch (error) {
       avisar(error.message || "No se pudo guardar el ingreso", "error");
@@ -110,39 +138,25 @@ function NuevoIngreso({ onVolver, ingreso }) {
     }
   }
 
-  async function finalizarIngreso(e) {
-    e.preventDefault();
-
-    const pendientes = buscarFaltantes();
-
-    if (pendientes.length > 0) {
-      const claves = pendientes.map(([campo]) => campo);
-      setFaltantes(claves);
-
-      avisar(
-        pendientes.length === 1
-          ? `Falta completar: ${pendientes[0][1]}`
-          : `Faltan ${pendientes.length} campos por completar`,
-        "error"
-      );
-
-      const primero = formRef.current?.elements[claves[0]];
-      primero?.focus();
-      primero?.scrollIntoView({ block: "center", behavior: "smooth" });
-      return;
-    }
+  // Finalizar no es entregar: el auto sigue en el taller hasta que
+  // alguien lo pase a "Entregado" desde el tablero.
+  async function finalizarTrabajo() {
+    if (!validar()) return;
 
     setGuardando("finalizar");
 
     try {
       await guardarIngreso(datos, { finalizado: true });
-      avisar("Ingreso finalizado y guardado en el historial", "ok");
+      avisar("Trabajo finalizado. El vehículo sigue en el taller hasta que se entregue.", "ok");
       onVolver();
     } catch (error) {
-      avisar(error.message || "No se pudo finalizar el ingreso", "error");
+      avisar(error.message || "No se pudo finalizar el trabajo", "error");
       setGuardando(null);
     }
   }
+
+  const totalTrabajoNum = Number(datos.totalTrabajo) || 0;
+  const saldo = totalTrabajoNum - (Number(datos.totalCobrado) || 0);
 
   const claseCampo = (campo) => `campo ${faltantes.includes(campo) ? "campo--error" : ""}`.trim();
 
@@ -153,13 +167,15 @@ function NuevoIngreso({ onVolver, ingreso }) {
         <Patente valor={datos.patente} tamano="lg" />
 
         <div className="ingreso__head-texto">
-          <span className="eyebrow">{esEdicion ? "Ingreso empezado" : "Alta de vehículo"}</span>
-          <h1>{esEdicion ? "Continuar ingreso" : "Nuevo ingreso"}</h1>
-          <p>{datos.vehiculo?.trim() || "Cargá los datos del vehículo y del trabajo realizado."}</p>
+          <span className="eyebrow">
+            {esEdicion ? "En el taller" : esNuevoTrabajo ? "Ficha existente" : "Alta de vehículo"}
+          </span>
+          <h1>{esEdicion ? "Editar trabajo" : esNuevoTrabajo ? "Nuevo trabajo" : "Nuevo ingreso"}</h1>
+          <p>{datos.vehiculo?.trim() || "Cargá los datos del vehículo. El resto se completa después."}</p>
         </div>
       </header>
 
-      <form onSubmit={finalizarIngreso} className="ingreso__form" ref={formRef} noValidate>
+      <form onSubmit={guardar} className="ingreso__form" ref={formRef} noValidate>
         {/* 01 — VEHÍCULO Y CLIENTE */}
         <section className="seccion">
           <div className="seccion__head">
@@ -205,7 +221,7 @@ function NuevoIngreso({ onVolver, ingreso }) {
                 name="telefono"
                 type="tel"
                 inputMode="tel"
-                placeholder="11 1234 5678"
+                placeholder="266 412 3456"
                 value={datos.telefono}
                 onChange={cambiarDato}
               />
@@ -226,7 +242,7 @@ function NuevoIngreso({ onVolver, ingreso }) {
 
             <div className={claseCampo("kilometraje")}>
               <label htmlFor="kilometraje">
-                Kilometraje <span className="campo__req">*</span>
+                Kilometraje
               </label>
               <input
                 id="kilometraje"
@@ -264,7 +280,7 @@ function NuevoIngreso({ onVolver, ingreso }) {
           <div className="rejilla-1">
             <div className={claseCampo("motivo")}>
               <label htmlFor="motivo">
-                Motivo del ingreso <span className="campo__req">*</span>
+                Motivo del ingreso
               </label>
               <textarea
                 id="motivo"
@@ -278,7 +294,7 @@ function NuevoIngreso({ onVolver, ingreso }) {
 
             <div className={claseCampo("diagnostico")}>
               <label htmlFor="diagnostico">
-                Diagnóstico <span className="campo__req">*</span>
+                Diagnóstico
               </label>
               <textarea
                 id="diagnostico"
@@ -292,7 +308,7 @@ function NuevoIngreso({ onVolver, ingreso }) {
 
             <div className={claseCampo("trabajos")}>
               <label htmlFor="trabajos">
-                Trabajos realizados <span className="campo__req">*</span>
+                Trabajos realizados
               </label>
               <textarea
                 id="trabajos"
@@ -315,9 +331,7 @@ function NuevoIngreso({ onVolver, ingreso }) {
 
           <div className="rejilla-2">
             <div className={claseCampo("manoObra")}>
-              <label htmlFor="manoObra">
-                Mano de obra <span className="campo__req">*</span>
-              </label>
+              <label htmlFor="manoObra">Mano de obra</label>
               <input
                 id="manoObra"
                 name="manoObra"
@@ -329,11 +343,22 @@ function NuevoIngreso({ onVolver, ingreso }) {
               />
             </div>
 
-            {/* El total va aparte: es el número que se cobra */}
+            <div className={claseCampo("totalTrabajo")}>
+              <label htmlFor="totalTrabajo">Total del trabajo</label>
+              <input
+                id="totalTrabajo"
+                name="totalTrabajo"
+                type="number"
+                inputMode="numeric"
+                placeholder="0"
+                value={datos.totalTrabajo}
+                onChange={cambiarDato}
+              />
+            </div>
+
+            {/* El total cobrado va aparte: es la plata que entró */}
             <div className={`${claseCampo("totalCobrado")} ancho-2 total`}>
-              <label htmlFor="totalCobrado">
-                Total cobrado <span className="campo__req">*</span>
-              </label>
+              <label htmlFor="totalCobrado">Total cobrado</label>
               <div className="total__campo">
                 <span className="total__signo" aria-hidden="true">
                   $
@@ -348,6 +373,16 @@ function NuevoIngreso({ onVolver, ingreso }) {
                   onChange={cambiarDato}
                 />
               </div>
+
+              {/* El saldo se muestra en vivo: es lo que va a Reportes */}
+              {saldo > 0 && (
+                <span className="total__ayuda total__ayuda--deuda num">
+                  Saldo pendiente: {pesos.format(saldo)}
+                </span>
+              )}
+              {saldo <= 0 && totalTrabajoNum > 0 && (
+                <span className="total__ayuda total__ayuda--saldado">Trabajo saldado</span>
+              )}
             </div>
           </div>
         </section>
@@ -362,7 +397,7 @@ function NuevoIngreso({ onVolver, ingreso }) {
           <div className="rejilla-2">
             <div className={claseCampo("mecanico")}>
               <label htmlFor="mecanico">
-                Mecánico a cargo <span className="campo__req">*</span>
+                Mecánico a cargo
               </label>
               <select id="mecanico" name="mecanico" value={datos.mecanico} onChange={cambiarDato}>
                 <option value="">Elegir mecánico</option>
@@ -374,21 +409,9 @@ function NuevoIngreso({ onVolver, ingreso }) {
               </select>
             </div>
 
-            <div className={claseCampo("estado")}>
-              <label htmlFor="estado">
-                Estado <span className="campo__req">*</span>
-              </label>
-              <select id="estado" name="estado" value={datos.estado} onChange={cambiarDato}>
-                <option>Pendiente</option>
-                <option>En reparación</option>
-                <option>Finalizado</option>
-                <option>Entregado</option>
-              </select>
-            </div>
-
             <div className={`${claseCampo("pendientes")} ancho-2`}>
               <label htmlFor="pendientes">
-                Trabajos pendientes <span className="campo__req">*</span>
+                Trabajos pendientes
               </label>
               <textarea
                 id="pendientes"
@@ -402,7 +425,7 @@ function NuevoIngreso({ onVolver, ingreso }) {
 
             <div className={`${claseCampo("observaciones")} ancho-2`}>
               <label htmlFor="observaciones">
-                Observaciones <span className="campo__req">*</span>
+                Observaciones
               </label>
               <textarea
                 id="observaciones"
@@ -420,31 +443,35 @@ function NuevoIngreso({ onVolver, ingreso }) {
         <div className="acciones">
           <p className="acciones__nota">
             <Icon name="alerta" size={15} />
-            Guardar deja el auto en el taller. Finalizar lo manda al historial.
+            {esEdicion
+              ? "Podés seguir editando esta ficha mientras el auto esté en el taller."
+              : "El vehículo entra al tablero como “En reparación”."}
           </p>
 
           <div className="acciones__botones">
-            <button
-              type="button"
-              className="btn btn--outline"
-              onClick={guardarEnTaller}
-              disabled={guardando !== null}
-            >
-              {guardando === "taller" ? (
+            {puedeFinalizar && (
+              <button
+                type="button"
+                className="btn btn--outline"
+                onClick={finalizarTrabajo}
+                disabled={guardando !== null}
+              >
+                {guardando === "finalizar" ? (
+                  <span className="spinner spinner--boton" aria-hidden="true" />
+                ) : (
+                  <Icon name="tilde" size={18} />
+                )}
+                Finalizar trabajo
+              </button>
+            )}
+
+            <button type="submit" className="btn btn--solid" disabled={guardando !== null}>
+              {guardando === "guardar" ? (
                 <span className="spinner spinner--boton" aria-hidden="true" />
               ) : (
                 <Icon name="guardar" size={18} />
               )}
-              Guardar
-            </button>
-
-            <button type="submit" className="btn btn--solid" disabled={guardando !== null}>
-              {guardando === "finalizar" ? (
-                <span className="spinner spinner--boton" aria-hidden="true" />
-              ) : (
-                <Icon name="tilde" size={18} />
-              )}
-              Finalizar ingreso
+              {esEdicion ? "Guardar cambios" : "Registrar ingreso"}
             </button>
           </div>
         </div>

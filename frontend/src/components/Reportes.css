@@ -73,3 +73,193 @@
     text-align: right;
   }
 }
+
+/* ============================================================
+   Saldos pendientes
+   ============================================================ */
+
+.cifra--deuda {
+  border-color: var(--danger-line);
+  background: var(--danger-soft);
+}
+
+.cifra--deuda .cifra__label,
+.cifra--deuda .cifra__valor {
+  color: var(--danger);
+}
+
+.reportes__subtitulo {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--ink-2);
+}
+
+/* --- Quién debe --- */
+
+.deudores {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.deudor {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--danger);
+  border-radius: var(--r);
+  background: var(--surface-2);
+}
+
+.deudor__nombre {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.deudor__nombre svg {
+  flex: none;
+  color: var(--ink-3);
+}
+
+.deudor__tel,
+.deudor__trabajos {
+  font-size: 0.82rem;
+  color: var(--ink-3);
+}
+
+.deudor__saldo {
+  margin-left: auto;
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--danger);
+}
+
+/* --- Detalle trabajo por trabajo --- */
+
+.saldos {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.saldo {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: var(--surface);
+}
+
+.saldo__id {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  margin-right: auto;
+}
+
+.saldo__vehiculo {
+  font-weight: 600;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.saldo__cliente {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+  color: var(--ink-3);
+}
+
+.saldo__punto {
+  width: 3px;
+  height: 3px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--line-strong);
+}
+
+.saldo__cuentas {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: none;
+  text-align: right;
+  font-size: 0.78rem;
+  color: var(--ink-3);
+}
+
+.saldo__monto {
+  flex: none;
+  min-width: 96px;
+  text-align: right;
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--danger);
+}
+
+.saldos__total {
+  margin-top: 6px;
+}
+
+/* En el celular la fila se apila en dos renglones */
+@media (max-width: 640px) {
+  .saldo {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-template-areas:
+      "patente id"
+      "chip    monto"
+      "cuentas monto";
+    gap: 8px 12px;
+  }
+
+  .saldo > .patente {
+    grid-area: patente;
+  }
+
+  .saldo__id {
+    grid-area: id;
+  }
+
+  .saldo > .chip {
+    grid-area: chip;
+    justify-self: start;
+  }
+
+  .saldo__cuentas {
+    grid-area: cuentas;
+    text-align: left;
+  }
+
+  .saldo__monto {
+    grid-area: monto;
+    align-self: center;
+  }
+
+  .deudor__saldo {
+    width: 100%;
+    margin-left: 0;
+    text-align: right;
+  }
+}

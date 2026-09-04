@@ -146,7 +146,7 @@
   }
 }
 
-/* Encabezado de pantalla, compartido por Buscar / Historial / Pendientes */
+/* Encabezado de pantalla, compartido por Historial, Reportes y el Tablero */
 .pantalla-head {
   display: flex;
   align-items: flex-end;

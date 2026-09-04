@@ -245,3 +245,26 @@
 .ficha__volver {
   align-self: flex-start;
 }
+
+/* ------------------------------------------------------------
+   Acciones de la ficha
+   ------------------------------------------------------------ */
+
+.ficha__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* Cierre en rojo cuando queda plata por cobrar */
+.cuenta__total--deuda {
+  background: var(--danger);
+}
+
+.cuenta__total--deuda .cuenta__total-label {
+  color: color-mix(in srgb, #fff 75%, transparent);
+}
+
+.cuenta__total--deuda .cuenta__total-valor {
+  color: #fff;
+}

@@ -127,3 +127,34 @@
   margin: 0 12px 12px;
   justify-content: center;
 }
+
+/* ------------------------------------------------------------
+   Acciones de cada tarjeta
+   ------------------------------------------------------------ */
+
+.kanban__acciones {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+
+.kanban__acciones .kanban__avanzar {
+  margin-left: auto;
+}
+
+/* Marca de que el trabajo tiene plata sin cobrar */
+.kanban__saldo {
+  margin-left: auto;
+  padding: 2px 8px;
+  border: 1px solid var(--danger-line);
+  border-radius: var(--r-pill);
+  background: var(--danger-soft);
+  color: var(--danger);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}

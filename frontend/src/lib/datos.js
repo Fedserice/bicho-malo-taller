@@ -4,11 +4,11 @@ import { supabase } from "./supabase";
  * Acceso a datos.
  * Modelo: clientes → vehículos (ficha única) → visitas (historial).
  * `vehiculos_resumen` es una vista de solo lectura: un vehículo por
- * fila con los datos de su última visita. Alimenta Inicio, Historial,
- * Pendientes, Buscar y el Kanban.
+ * fila con los datos de su última visita. Alimenta el Panel (tablero
+ * y buscador) y el Historial.
  */
 
-const ESTADOS = ["Pendiente", "En reparación", "Finalizado", "Entregado"];
+const ESTADOS = ["En reparación", "Finalizado", "Entregado"];
 
 function numero(valor) {
   if (valor === "" || valor === null || valor === undefined) return null;
@@ -40,8 +40,8 @@ function reventar(error) {
 
 const COLUMNAS_VISITA = `
   id, vehiculo_id, fecha, kilometraje, motivo, diagnostico, trabajos,
-  mano_obra, total_cobrado, mecanico, estado, pendientes, observaciones,
-  creado_en, actualizado_en
+  mano_obra, total_trabajo, total_cobrado, saldo, mecanico, estado,
+  pendientes, observaciones, creado_en, actualizado_en
 `;
 
 function desdeFilaVisita(fila) {
@@ -54,7 +54,9 @@ function desdeFilaVisita(fila) {
     diagnostico: texto(fila.diagnostico),
     trabajos: texto(fila.trabajos),
     manoObra: fila.mano_obra ?? "",
+    totalTrabajo: fila.total_trabajo ?? "",
     totalCobrado: fila.total_cobrado ?? "",
+    saldo: Number(fila.saldo) || 0,
     mecanico: texto(fila.mecanico),
     estado: texto(fila.estado),
     pendientes: texto(fila.pendientes),
@@ -71,15 +73,16 @@ function haciaFilaVisita(datos) {
     diagnostico: texto(datos.diagnostico),
     trabajos: texto(datos.trabajos),
     mano_obra: numero(datos.manoObra),
+    total_trabajo: numero(datos.totalTrabajo),
     total_cobrado: numero(datos.totalCobrado),
     mecanico: texto(datos.mecanico),
-    estado: texto(datos.estado) || "Pendiente",
+    estado: texto(datos.estado) || "En reparación",
     pendientes: texto(datos.pendientes),
     observaciones: texto(datos.observaciones),
   };
 }
 
-/** Fila de `vehiculos_resumen` → objeto plano que usan Historial/Pendientes/Buscar/Kanban. */
+/** Fila de `vehiculos_resumen` → objeto plano que usan el tablero, el buscador y el Historial. */
 function desdeFilaResumen(fila) {
   return {
     id: fila.id,
@@ -92,8 +95,12 @@ function desdeFilaResumen(fila) {
     fecha: fila.fecha ?? "",
     estado: texto(fila.estado),
     motivo: texto(fila.motivo),
+    trabajos: texto(fila.trabajos),
     mecanico: texto(fila.mecanico),
-    totalCobrado: fila.totalCobrado ?? "",
+    manoObra: fila.mano_obra ?? "",
+    totalTrabajo: fila.total_trabajo ?? "",
+    totalCobrado: fila.total_cobrado ?? "",
+    saldo: Number(fila.saldo) || 0,
     cantidadVisitas: fila.cantidad_visitas ?? 0,
   };
 }
@@ -261,7 +268,7 @@ export async function listarVehiculos() {
   return (data ?? []).map(desdeFilaResumen);
 }
 
-/** Vehículos con una visita activa (no entregada) — pantalla "En el taller" y Kanban. */
+/** Vehículos que siguen en el taller (En reparación o Finalizado) — alimenta el tablero. */
 export async function listarEnTaller() {
   const { data, error } = await supabase
     .from("vehiculos_resumen")
@@ -300,11 +307,6 @@ export async function buscarVehiculos(consulta) {
 
   reventar(error);
   return (data ?? []).map(desdeFilaResumen);
-}
-
-/** Alias para compatibilidad con el componente Buscar.jsx */
-export async function buscarIngresos(consulta) {
-  return await buscarVehiculos(consulta);
 }
 
 // ------------------------------------------------------------
@@ -365,9 +367,12 @@ export async function cambiarEstadoVisita(visitaId, estado) {
  * Si no, busca o crea el vehículo y arma una visita nueva.
  */
 export async function guardarIngreso(datos, opciones = {}) {
+  // El estado no se elige a mano: un ingreso nuevo nace "En reparación"
+  // y solo se mueve con las acciones del flujo. "Finalizar" deja el auto
+  // en el taller; recién "Entregado" lo saca del tablero.
   const datosVisita = {
     ...datos,
-    estado: opciones.finalizado ? "Entregado" : datos.estado || "Pendiente",
+    estado: opciones.finalizado ? "Finalizado" : datos.estado || "En reparación",
   };
 
   if (datos.id) {
@@ -455,11 +460,67 @@ function nombreMes(clave) {
  * mecánico. Todo se calcula en el cliente para no depender de
  * funciones extra en la base.
  */
-export async function obtenerReportes() {
+/**
+ * Trabajos con plata sin cobrar. El saldo lo calcula la base
+ * (`total_trabajo − total_cobrado`), así que acá solo se piden los
+ * que dan mayor a cero: si un trabajo está saldado, no aparece.
+ */
+export async function obtenerSaldosPendientes() {
   const { data, error } = await supabase
     .from("visitas")
-    .select("fecha, mano_obra, total_cobrado, mecanico, estado")
-    .eq("estado", "Entregado");
+    .select(
+      "id, fecha, estado, total_trabajo, total_cobrado, saldo, vehiculos ( id, patente, vehiculo, clientes ( nombre, telefono ) )"
+    )
+    .gt("saldo", 0)
+    .order("saldo", { ascending: false });
+
+  reventar(error);
+
+  const trabajos = (data ?? []).map((fila) => ({
+    id: fila.id,
+    vehiculoId: fila.vehiculos?.id ?? null,
+    patente: texto(fila.vehiculos?.patente),
+    vehiculo: texto(fila.vehiculos?.vehiculo),
+    cliente: texto(fila.vehiculos?.clientes?.nombre) || "Sin cliente",
+    telefono: texto(fila.vehiculos?.clientes?.telefono),
+    fecha: fila.fecha ?? "",
+    estado: texto(fila.estado),
+    total: Number(fila.total_trabajo) || 0,
+    cobrado: Number(fila.total_cobrado) || 0,
+    saldo: Number(fila.saldo) || 0,
+  }));
+
+  // Un mismo cliente puede deber por varios trabajos: se agrupa para
+  // que quede claro de un vistazo quién debe y cuánto.
+  const porDeudor = new Map();
+  for (const t of trabajos) {
+    const actual = porDeudor.get(t.cliente) ?? {
+      cliente: t.cliente,
+      telefono: t.telefono,
+      trabajos: 0,
+      saldo: 0,
+    };
+    actual.trabajos += 1;
+    actual.saldo += t.saldo;
+    if (!actual.telefono) actual.telefono = t.telefono;
+    porDeudor.set(t.cliente, actual);
+  }
+
+  return {
+    trabajos,
+    deudores: [...porDeudor.values()].sort((a, b) => b.saldo - a.saldo),
+    totalSaldos: trabajos.reduce((acc, t) => acc + t.saldo, 0),
+  };
+}
+
+export async function obtenerReportes() {
+  const [{ data, error }, saldos] = await Promise.all([
+    supabase
+      .from("visitas")
+      .select("fecha, mano_obra, total_cobrado, mecanico, estado")
+      .eq("estado", "Entregado"),
+    obtenerSaldosPendientes(),
+  ]);
 
   reventar(error);
   const visitas = data ?? [];
@@ -498,5 +559,6 @@ export async function obtenerReportes() {
     trabajosEntregados: visitas.length,
     facturacionMensual,
     porMecanico: porMecanicoLista,
+    saldos,
   };
 }

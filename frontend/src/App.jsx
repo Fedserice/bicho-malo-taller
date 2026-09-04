@@ -2,11 +2,8 @@ import { useEffect, useState } from "react";
 import Login from "./components/Login";
 import Inicio from "./components/Inicio";
 import NuevoIngreso from "./components/NuevoIngreso";
-import Pendientes from "./components/Pendientes";
-import Buscar from "./components/Buscar";
 import Historial from "./components/Historial";
 import FichaIngreso from "./components/FichaIngreso";
-import Kanban from "./components/Kanban";
 import Reportes from "./components/Reportes";
 import FaltaConfig from "./components/FaltaConfig";
 import Icon from "./ui/Icon";
@@ -16,38 +13,58 @@ import { useToast } from "./ui/useToast";
 import { supabase, hayConfig } from "./lib/supabase";
 import "./App.css";
 
-// Cada pantalla declara cómo se llama. La ficha puede abrirse desde
-// varios lugares (Historial, Buscar, Kanban), así que su "volver"
-// se calcula en tiempo real en vez de ser fijo.
+// El Panel concentra buscador y tablero, así que quedan pocas pantallas.
 const PANTALLAS = {
-  inicio: { titulo: "Inicio", vuelveA: null },
-  nuevo: { titulo: "Nuevo ingreso", vuelveA: "inicio" },
-  buscar: { titulo: "Buscar", vuelveA: "inicio" },
-  historial: { titulo: "Historial", vuelveA: "inicio" },
-  ficha: { titulo: "Ficha del vehículo", vuelveA: "inicio" },
-  pendientes: { titulo: "En el taller", vuelveA: "inicio" },
-  kanban: { titulo: "Tablero", vuelveA: "inicio" },
-  reportes: { titulo: "Reportes", vuelveA: "inicio" },
+  inicio: "Inicio",
+  nuevo: "Nuevo ingreso",
+  historial: "Historial",
+  ficha: "Ficha del vehículo",
+  reportes: "Reportes",
 };
 
 function App() {
   const [sesion, setSesion] = useState(null);
   const [revisandoSesion, setRevisandoSesion] = useState(hayConfig);
   const [pantalla, setPantalla] = useState("inicio");
-  const [pantallaPrevia, setPantallaPrevia] = useState("inicio");
+  // Pila de pantallas anteriores: la ficha y el formulario se abren desde
+  // varios lados y se encadenan (tablero → ficha → editar), así que
+  // "Volver" tiene que deshacer el camino real, no uno fijo.
+  const [pila, setPila] = useState([]);
   const [ingresoEnEdicion, setIngresoEnEdicion] = useState(null);
   const [vehiculoSeleccionado, setVehiculoSeleccionado] = useState(null);
   const avisar = useToast();
 
+  function ir(destino) {
+    setPila((previas) => [...previas, pantalla]);
+    setPantalla(destino);
+  }
+
+  function volver() {
+    const destino = pila[pila.length - 1] ?? "inicio";
+    setPila((previas) => previas.slice(0, -1));
+    setPantalla(destino);
+  }
+
   function abrirFicha(ingreso) {
-    setPantallaPrevia(pantalla);
     setVehiculoSeleccionado(ingreso.vehiculoId ?? ingreso.id);
-    setPantalla("ficha");
+    ir("ficha");
   }
 
   function irANuevoIngreso() {
     setIngresoEnEdicion(null);
-    setPantalla("nuevo");
+    ir("nuevo");
+  }
+
+  /** Abre el formulario con una visita ya cargada, para seguir editándola. */
+  function editarTrabajo(visita) {
+    setIngresoEnEdicion(visita);
+    ir("nuevo");
+  }
+
+  /** Abre el formulario con el vehículo precargado, sin visita: es un trabajo nuevo. */
+  function nuevoTrabajoEnFicha(datosVehiculo) {
+    setIngresoEnEdicion(datosVehiculo);
+    ir("nuevo");
   }
 
   // Sesión guardada en el navegador + cambios de login/logout
@@ -86,8 +103,8 @@ function App() {
     return <Login />;
   }
 
-  const actual = PANTALLAS[pantalla] ?? PANTALLAS.inicio;
-  const vuelveA = pantalla === "ficha" ? pantallaPrevia : actual.vuelveA;
+  const titulo = PANTALLAS[pantalla] ?? PANTALLAS.inicio;
+  const puedeVolver = pila.length > 0;
 
   async function cerrarSesion() {
     const { error } = await supabase.auth.signOut();
@@ -98,6 +115,7 @@ function App() {
     }
 
     setPantalla("inicio");
+    setPila([]);
     setIngresoEnEdicion(null);
     setVehiculoSeleccionado(null);
     avisar("Sesión cerrada", "info");
@@ -109,11 +127,11 @@ function App() {
 
       <header className="topbar">
         <div className="topbar__inner">
-          {vuelveA ? (
+          {puedeVolver ? (
             <button
               type="button"
               className="btn btn--ghost btn--sm topbar__volver"
-              onClick={() => setPantalla(vuelveA)}
+              onClick={volver}
             >
               <Icon name="izquierda" size={17} />
               <span className="topbar__volver-texto">Volver</span>
@@ -131,7 +149,7 @@ function App() {
                 <span className="topbar__sep" aria-hidden="true">
                   /
                 </span>
-                <span className="topbar__pantalla">{actual.titulo}</span>
+                <span className="topbar__pantalla">{titulo}</span>
               </>
             )}
           </div>
@@ -151,37 +169,28 @@ function App() {
       <main className="app__contenido" key={pantalla}>
         {pantalla === "inicio" && (
           <Inicio
-            onBuscar={() => setPantalla("buscar")}
             onHistorial={() => setPantalla("historial")}
-            onPendientes={() => setPantalla("pendientes")}
-            onKanban={() => setPantalla("kanban")}
             onReportes={() => setPantalla("reportes")}
-          />
-        )}
-
-        {pantalla === "nuevo" && (
-          <NuevoIngreso ingreso={ingresoEnEdicion} onVolver={() => setPantalla("inicio")} />
-        )}
-
-        {pantalla === "buscar" && <Buscar onSeleccionar={abrirFicha} />}
-
-        {pantalla === "historial" && <Historial onSeleccionar={abrirFicha} />}
-
-        {pantalla === "ficha" && vehiculoSeleccionado && (
-          <FichaIngreso vehiculoId={vehiculoSeleccionado} onVolver={() => setPantalla(pantallaPrevia)} />
-        )}
-
-        {pantalla === "pendientes" && (
-          <Pendientes
-            onAbrir={(ingreso) => {
-              setIngresoEnEdicion(ingreso);
-              setPantalla("nuevo");
-            }}
+            onAbrirFicha={abrirFicha}
+            onEditar={editarTrabajo}
             onNuevoIngreso={irANuevoIngreso}
           />
         )}
 
-        {pantalla === "kanban" && <Kanban onSeleccionar={abrirFicha} />}
+        {pantalla === "nuevo" && (
+          <NuevoIngreso ingreso={ingresoEnEdicion} onVolver={volver} />
+        )}
+
+        {pantalla === "historial" && <Historial onSeleccionar={abrirFicha} />}
+
+        {pantalla === "ficha" && vehiculoSeleccionado && (
+          <FichaIngreso
+            vehiculoId={vehiculoSeleccionado}
+            onVolver={volver}
+            onEditar={editarTrabajo}
+            onNuevoTrabajo={nuevoTrabajoEnFicha}
+          />
+        )}
 
         {pantalla === "reportes" && <Reportes />}
       </main>

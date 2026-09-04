@@ -158,3 +158,12 @@
     padding: 16px;
   }
 }
+
+/* Cuántos resultados trajo la búsqueda del Panel */
+.buscar__cuenta {
+  margin-bottom: 14px;
+  font-size: 0.82rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}

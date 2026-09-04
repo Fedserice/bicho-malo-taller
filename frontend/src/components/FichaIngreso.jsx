@@ -17,7 +17,9 @@ const kilometros = new Intl.NumberFormat("es-AR");
 
 function Visita({ visita, esUltima }) {
   const manoObra = Number(visita.manoObra) || 0;
-  const total = Number(visita.totalCobrado) || 0;
+  const totalTrabajo = Number(visita.totalTrabajo) || 0;
+  const cobrado = Number(visita.totalCobrado) || 0;
+  const saldo = totalTrabajo - cobrado;
 
   return (
     <article className={`bloque bloque--ancho visita ${esUltima ? "visita--actual" : ""}`}>
@@ -65,11 +67,27 @@ function Visita({ visita, esUltima }) {
           </span>
           <span className="num">{pesos.format(manoObra)}</span>
         </div>
+        <div className="cuenta__fila">
+          <span>
+            <Icon name="peso" size={15} />
+            Total del trabajo
+          </span>
+          <span className="num">{pesos.format(totalTrabajo)}</span>
+        </div>
+        <div className="cuenta__fila">
+          <span>
+            <Icon name="tilde" size={15} />
+            Cobrado
+          </span>
+          <span className="num">{pesos.format(cobrado)}</span>
+        </div>
       </div>
 
-      <div className="cuenta__total">
-        <span className="cuenta__total-label">Total cobrado</span>
-        <span className="cuenta__total-valor num">{pesos.format(total)}</span>
+      <div className={`cuenta__total ${saldo > 0 ? "cuenta__total--deuda" : ""}`.trim()}>
+        <span className="cuenta__total-label">
+          {saldo > 0 ? "Saldo pendiente" : "Saldado"}
+        </span>
+        <span className="cuenta__total-valor num">{pesos.format(Math.max(saldo, 0))}</span>
       </div>
 
       {(visita.pendientes?.trim() || visita.observaciones?.trim()) && (
@@ -92,7 +110,7 @@ function Visita({ visita, esUltima }) {
   );
 }
 
-function FichaIngreso({ vehiculoId, onVolver }) {
+function FichaIngreso({ vehiculoId, onVolver, onEditar, onNuevoTrabajo }) {
   const consulta = useCallback(() => obtenerFichaVehiculo(vehiculoId), [vehiculoId]);
   const { cargando, error, datos: ficha } = useConsulta(consulta, null);
 
@@ -102,6 +120,21 @@ function FichaIngreso({ vehiculoId, onVolver }) {
 
   const visitas = ficha.visitas ?? [];
   const ultima = visitas[0];
+
+  // Los datos del vehículo y del cliente viajan junto a la visita:
+  // el formulario los necesita para poder editarlos también.
+  const datosVehiculo = {
+    vehiculoId: ficha.id,
+    clienteId: ficha.clienteId,
+    patente: ficha.patente,
+    vehiculo: ficha.vehiculo,
+    cliente: ficha.cliente,
+    telefono: ficha.telefono,
+  };
+
+  // Mientras el auto está en el taller la ficha se puede editar.
+  // Una vez entregado, lo que corresponde es abrir un trabajo nuevo.
+  const enTaller = Boolean(ultima) && ultima.estado !== "Entregado";
 
   return (
     <div className="ficha">
@@ -120,6 +153,28 @@ function FichaIngreso({ vehiculoId, onVolver }) {
           </div>
         </div>
       </header>
+
+      <div className="ficha__acciones">
+        {enTaller ? (
+          <button
+            type="button"
+            className="btn btn--solid"
+            onClick={() => onEditar?.({ ...ultima, ...datosVehiculo })}
+          >
+            <Icon name="lapiz" size={17} />
+            Editar trabajo
+          </button>
+        ) : (
+          <button
+            type="button"
+            className="btn btn--primary"
+            onClick={() => onNuevoTrabajo?.(datosVehiculo)}
+          >
+            <Icon name="mas" size={17} />
+            Nuevo trabajo
+          </button>
+        )}
+      </div>
 
       <div className="ficha__grid">
         <section className="bloque">

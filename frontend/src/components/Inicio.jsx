@@ -1,6 +1,8 @@
-import { useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Icon from "../ui/Icon";
 import { ErrorDatos } from "../ui/Estados";
+import Kanban from "./Kanban";
+import Buscar from "./Buscar";
 import { obtenerResumen } from "../lib/datos";
 import { useConsulta } from "../lib/useConsulta";
 import "./Inicio.css";
@@ -13,11 +15,21 @@ const pesos = new Intl.NumberFormat("es-AR", {
 
 const RESUMEN_VACIO = { enTaller: 0, cerrados: 0, facturado: 0 };
 
-function Inicio({ onBuscar, onHistorial, onPendientes, onKanban, onReportes }) {
+function Inicio({ onHistorial, onReportes, onAbrirFicha, onEditar, onNuevoIngreso }) {
   const consulta = useCallback(() => obtenerResumen(), []);
   const { cargando, error, datos } = useConsulta(consulta, RESUMEN_VACIO);
 
+  const [texto, setTexto] = useState("");
+  const [consultaFirme, setConsultaFirme] = useState("");
+
+  // Se espera a que dejen de tipear antes de pegarle a la base.
+  useEffect(() => {
+    const espera = setTimeout(() => setConsultaFirme(texto.trim()), 300);
+    return () => clearTimeout(espera);
+  }, [texto]);
+
   const resumen = datos ?? RESUMEN_VACIO;
+  const buscando = texto.trim() !== "";
 
   const hoy = new Date().toLocaleDateString("es-AR", {
     weekday: "long",
@@ -35,90 +47,106 @@ function Inicio({ onBuscar, onHistorial, onPendientes, onKanban, onReportes }) {
         <h1>Panel del taller</h1>
       </header>
 
-      {error && <ErrorDatos mensaje={error} />}
+      {/* Buscador: patente, cliente, vehículo o trabajo realizado */}
+      <div className="buscador">
+        <Icon name="buscar" size={20} className="buscador__lupa" />
+        <input
+          type="search"
+          className="buscador__input"
+          placeholder="Buscar por patente, cliente, vehículo o trabajo…"
+          value={texto}
+          onChange={(e) => setTexto(e.target.value)}
+          autoCapitalize="none"
+          spellCheck="false"
+          aria-label="Buscar vehículos"
+        />
+        {texto && (
+          <button
+            type="button"
+            className="btn-icon buscador__limpiar"
+            onClick={() => setTexto("")}
+            aria-label="Borrar la búsqueda"
+          >
+            <Icon name="cerrar" size={16} />
+          </button>
+        )}
+      </div>
 
-      {/* Estado del taller */}
-      <section className="inicio__cifras" aria-label="Resumen del taller">
-        <button type="button" className="cifra cifra--activa" onClick={onPendientes}>
-          <span className="cifra__label">En el taller</span>
-          <span className="cifra__valor num">{cifra(resumen.enTaller)}</span>
-          <span className="cifra__pie">
-            {resumen.enTaller === 1 ? "vehículo sin cerrar" : "vehículos sin cerrar"}
-            <Icon name="chevron" size={14} />
-          </span>
-        </button>
+      {/* Buscando, los resultados ocupan el lugar del tablero */}
+      {buscando ? (
+        <Buscar
+          consulta={consultaFirme || texto.trim()}
+          escribiendo={texto.trim() !== consultaFirme}
+          onSeleccionar={onAbrirFicha}
+        />
+      ) : (
+        <>
+          {error && <ErrorDatos mensaje={error} />}
 
-        <div className="cifra">
-          <span className="cifra__label">Trabajos cerrados</span>
-          <span className="cifra__valor num">{cifra(resumen.cerrados)}</span>
-          <span className="cifra__pie">en el historial</span>
-        </div>
+          <section className="inicio__cifras" aria-label="Resumen del taller">
+            <div className="cifra">
+              <span className="cifra__label">En el taller</span>
+              <span className="cifra__valor num">{cifra(resumen.enTaller)}</span>
+              <span className="cifra__pie">
+                {resumen.enTaller === 1 ? "vehículo adentro" : "vehículos adentro"}
+              </span>
+            </div>
 
-        <div className="cifra">
-          <span className="cifra__label">Total cobrado</span>
-          <span className="cifra__valor cifra__valor--monto num">
-            {cifra(pesos.format(resumen.facturado))}
-          </span>
-          <span className="cifra__pie">sobre trabajos cerrados</span>
-        </div>
-      </section>
+            <div className="cifra">
+              <span className="cifra__label">Entregados</span>
+              <span className="cifra__valor num">{cifra(resumen.cerrados)}</span>
+              <span className="cifra__pie">en el historial</span>
+            </div>
 
-      {/* Acciones */}
-      <section className="inicio__acciones" aria-label="Acciones">
-        <button type="button" className="tile" onClick={onBuscar}>
-          <span className="tile__icono">
-            <Icon name="buscar" size={20} />
-          </span>
-          <span className="tile__texto">
-            <span className="tile__titulo">Buscar</span>
-            <span className="tile__desc">Por patente, cliente o trabajo</span>
-          </span>
-        </button>
+            <div className="cifra">
+              <span className="cifra__label">Total cobrado</span>
+              <span className="cifra__valor cifra__valor--monto num">
+                {cifra(pesos.format(resumen.facturado))}
+              </span>
+              <span className="cifra__pie">sobre trabajos entregados</span>
+            </div>
+          </section>
 
-        <button type="button" className="tile" onClick={onPendientes}>
-          <span className="tile__icono">
-            <Icon name="auto" size={20} />
-          </span>
-          <span className="tile__texto">
-            <span className="tile__titulo">En el taller</span>
-            <span className="tile__desc">Ingresos empezados sin cerrar</span>
-          </span>
-          {resumen.enTaller > 0 && <span className="tile__contador num">{resumen.enTaller}</span>}
-        </button>
+          {/* El tablero vive acá: es lo primero que se mira al abrir la app */}
+          <section className="inicio__tablero" aria-label="Tablero del taller">
+            <header className="inicio__seccion-head">
+              <h2>Tablero</h2>
+              <p>Los autos que están adentro. Al entregarlos pasan al historial.</p>
+            </header>
 
-        <button type="button" className="tile" onClick={onHistorial}>
-          <span className="tile__icono">
-            <Icon name="planilla" size={20} />
-          </span>
-          <span className="tile__texto">
-            <span className="tile__titulo">Historial</span>
-            <span className="tile__desc">Vehículos entregados</span>
-          </span>
-          <Icon name="chevron" size={18} className="tile__flecha" />
-        </button>
+            <Kanban
+              embebido
+              onSeleccionar={onAbrirFicha}
+              onEditar={onEditar}
+              onNuevoIngreso={onNuevoIngreso}
+            />
+          </section>
 
-        <button type="button" className="tile" onClick={onKanban}>
-          <span className="tile__icono">
-            <Icon name="tablero" size={20} />
-          </span>
-          <span className="tile__texto">
-            <span className="tile__titulo">Tablero</span>
-            <span className="tile__desc">El taller de un vistazo, por estado</span>
-          </span>
-          <Icon name="chevron" size={18} className="tile__flecha" />
-        </button>
+          <section className="inicio__acciones" aria-label="Otras secciones">
+            <button type="button" className="tile" onClick={onHistorial}>
+              <span className="tile__icono">
+                <Icon name="planilla" size={20} />
+              </span>
+              <span className="tile__texto">
+                <span className="tile__titulo">Historial</span>
+                <span className="tile__desc">Vehículos entregados</span>
+              </span>
+              <Icon name="chevron" size={18} className="tile__flecha" />
+            </button>
 
-        <button type="button" className="tile tile--ancho" onClick={onReportes}>
-          <span className="tile__icono">
-            <Icon name="grafico" size={20} />
-          </span>
-          <span className="tile__texto">
-            <span className="tile__titulo">Reportes</span>
-            <span className="tile__desc">Facturación y desempeño por mecánico</span>
-          </span>
-          <Icon name="chevron" size={18} className="tile__flecha" />
-        </button>
-      </section>
+            <button type="button" className="tile" onClick={onReportes}>
+              <span className="tile__icono">
+                <Icon name="grafico" size={20} />
+              </span>
+              <span className="tile__texto">
+                <span className="tile__titulo">Reportes</span>
+                <span className="tile__desc">Facturación y saldos pendientes</span>
+              </span>
+              <Icon name="chevron" size={18} className="tile__flecha" />
+            </button>
+          </section>
+        </>
+      )}
     </div>
   );
 }

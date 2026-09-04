@@ -2,26 +2,26 @@ import { useCallback, useState } from "react";
 import Icon from "../ui/Icon";
 import Patente from "../ui/Patente";
 import { Cargando, ErrorDatos } from "../ui/Estados";
-import { listarVehiculos, cambiarEstadoVisita } from "../lib/datos";
+import { listarEnTaller, cambiarEstadoVisita, obtenerVisitaParaEditar } from "../lib/datos";
 import { useConsulta } from "../lib/useConsulta";
 import { useToast } from "../ui/useToast";
 import "./Kanban.css";
 
+// El tablero muestra solo lo que está adentro del taller. Al pasar a
+// "Entregado" el vehículo desaparece de acá y queda en el Historial.
 const COLUMNAS = [
-  { estado: "Pendiente", titulo: "Pendiente" },
   { estado: "En reparación", titulo: "En reparación" },
   { estado: "Finalizado", titulo: "Finalizado" },
-  { estado: "Entregado", titulo: "Entregado" },
 ];
 
 const SIGUIENTE_ESTADO = {
-  Pendiente: "En reparación",
   "En reparación": "Finalizado",
   Finalizado: "Entregado",
 };
 
-function Tarjeta({ ingreso, onSeleccionar, onAvanzar, moviendo }) {
+function Tarjeta({ ingreso, onSeleccionar, onEditar, onAvanzar, moviendo }) {
   const siguiente = SIGUIENTE_ESTADO[ingreso.estado];
+  const saldo = Number(ingreso.saldo) || 0;
 
   return (
     <article className="kanban__tarjeta">
@@ -32,6 +32,11 @@ function Tarjeta({ ingreso, onSeleccionar, onAvanzar, moviendo }) {
       >
         <div className="kanban__tarjeta-head">
           <Patente valor={ingreso.patente} tamano="sm" />
+          {saldo > 0 && (
+            <span className="kanban__saldo num" title="Saldo pendiente de cobro">
+              Debe
+            </span>
+          )}
         </div>
         <h3>{ingreso.vehiculo || "Vehículo sin cargar"}</h3>
         <p className="kanban__cliente">
@@ -41,27 +46,43 @@ function Tarjeta({ ingreso, onSeleccionar, onAvanzar, moviendo }) {
         {ingreso.motivo?.trim() && <p className="kanban__motivo">{ingreso.motivo}</p>}
       </button>
 
-      {siguiente && (
+      <div className="kanban__acciones">
         <button
           type="button"
-          className="btn btn--outline btn--sm kanban__avanzar"
+          className="btn btn--ghost btn--sm"
+          onClick={() => onEditar(ingreso)}
           disabled={moviendo}
-          onClick={() => onAvanzar(ingreso, siguiente)}
         >
-          {moviendo ? (
-            <span className="spinner spinner--boton" aria-hidden="true" />
-          ) : (
-            <Icon name="derecha" size={15} />
-          )}
-          Pasar a {siguiente}
+          <Icon name="lapiz" size={15} />
+          Editar
         </button>
-      )}
+
+        {siguiente && (
+          <button
+            type="button"
+            className="btn btn--outline btn--sm kanban__avanzar"
+            disabled={moviendo}
+            onClick={() => onAvanzar(ingreso, siguiente)}
+          >
+            {moviendo ? (
+              <span className="spinner spinner--boton" aria-hidden="true" />
+            ) : (
+              <Icon name="derecha" size={15} />
+            )}
+            {siguiente === "Entregado" ? "Entregar" : "Finalizar"}
+          </button>
+        )}
+      </div>
     </article>
   );
 }
 
-function Kanban({ onSeleccionar }) {
-  const consulta = useCallback(() => listarVehiculos(), []);
+/**
+ * Tablero del taller. Vive dentro del Panel (`embebido`), pero se
+ * mantiene como componente aparte porque trae y refresca sus datos.
+ */
+function Kanban({ onSeleccionar, onEditar, onNuevoIngreso, embebido = false }) {
+  const consulta = useCallback(() => listarEnTaller(), []);
   const { cargando, error, datos, recargar } = useConsultaConReload(consulta);
   const [moviendo, setMoviendo] = useState(null);
   const avisar = useToast();
@@ -72,8 +93,13 @@ function Kanban({ onSeleccionar }) {
     setMoviendo(ingreso.id);
     try {
       await cambiarEstadoVisita(ingreso.ultimaVisitaId, estadoNuevo);
-      avisar(`${ingreso.patente || "Vehículo"} pasó a “${estadoNuevo}”`, "ok");
-      await recargar();
+      avisar(
+        estadoNuevo === "Entregado"
+          ? `${ingreso.patente || "El vehículo"} se entregó y pasó al historial`
+          : `${ingreso.patente || "El vehículo"} pasó a “${estadoNuevo}”`,
+        "ok"
+      );
+      recargar();
     } catch (err) {
       avisar(err.message || "No se pudo mover el vehículo", "error");
     } finally {
@@ -81,20 +107,51 @@ function Kanban({ onSeleccionar }) {
     }
   }
 
+  // La ficha se edita con el mismo formulario del ingreso, cargado
+  // con la visita que está abierta.
+  async function editar(ingreso) {
+    setMoviendo(ingreso.id);
+    try {
+      const visita = await obtenerVisitaParaEditar(ingreso.vehiculoId, ingreso.ultimaVisitaId);
+      onEditar(visita);
+    } catch (err) {
+      avisar(err.message || "No se pudo abrir el trabajo", "error");
+      setMoviendo(null);
+    }
+  }
+
   return (
     <div className="kanban">
-      <header className="pantalla-head">
-        <div className="pantalla-head__texto">
-          <span className="eyebrow">Flujo de trabajo</span>
-          <h1>Tablero</h1>
-          <p>Un vistazo a en qué etapa está cada vehículo.</p>
-        </div>
-      </header>
+      {!embebido && (
+        <header className="pantalla-head">
+          <div className="pantalla-head__texto">
+            <span className="eyebrow">Flujo de trabajo</span>
+            <h1>Tablero</h1>
+            <p>Un vistazo a en qué etapa está cada vehículo.</p>
+          </div>
+        </header>
+      )}
 
       {error && <ErrorDatos mensaje={error} />}
       {cargando && <Cargando texto="Armando el tablero…" />}
 
-      {!cargando && !error && (
+      {!cargando && !error && ingresos.length === 0 && (
+        <div className="vacio">
+          <span className="vacio__icono">
+            <Icon name="auto" size={24} />
+          </span>
+          <h3>No hay autos en el taller</h3>
+          <p>Cuando registres un ingreso, el vehículo aparece acá en “En reparación”.</p>
+          {onNuevoIngreso && (
+            <button type="button" className="btn btn--primary" onClick={onNuevoIngreso}>
+              <Icon name="mas" size={18} />
+              Cargar un ingreso
+            </button>
+          )}
+        </div>
+      )}
+
+      {!cargando && !error && ingresos.length > 0 && (
         <div className="kanban__tablero">
           {COLUMNAS.map((columna) => {
             const items = ingresos.filter((i) => i.estado === columna.estado);
@@ -112,6 +169,7 @@ function Kanban({ onSeleccionar }) {
                       key={ingreso.id}
                       ingreso={ingreso}
                       onSeleccionar={onSeleccionar}
+                      onEditar={editar}
                       onAvanzar={avanzar}
                       moviendo={moviendo === ingreso.id}
                     />

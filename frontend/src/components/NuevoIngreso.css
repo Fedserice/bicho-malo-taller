@@ -234,3 +234,14 @@
     flex: 1;
   }
 }
+
+/* El saldo se calcula en vivo debajo del total cobrado */
+.total__ayuda--deuda {
+  font-weight: 600;
+  color: var(--danger);
+}
+
+.total__ayuda--saldado {
+  font-weight: 600;
+  color: var(--ok);
+}
