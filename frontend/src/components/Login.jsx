@@ -1,6 +1,6 @@
 import { useState } from "react";
 import Icon from "../ui/Icon";
-import Patente from "../ui/Patente";
+import logo from "../assets/logo.png";
 import { supabase } from "../lib/supabase";
 import "./Login.css";
 
@@ -71,7 +71,7 @@ function Login() {
         {/* Panel de marca: la chapa es la identidad del taller */}
         <aside className="login__marca">
           <div className="login__marca-top">
-            <Patente valor="BICHO MALO" tamano="lg" />
+            <img src={logo} alt="Bicho Malo Taller" className="login__logo" />
           </div>
 
           <div className="login__marca-texto">

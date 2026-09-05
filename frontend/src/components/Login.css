@@ -5,7 +5,6 @@
    (ya existe como componente, se reusa en grande); a la derecha
    el formulario, como si fuera la ventanilla de recepción.
    ============================================================ */
-
 .login {
   position: relative;
   min-height: 100vh;
@@ -68,6 +67,14 @@
 
 .login__marca-top {
   align-self: flex-start;
+}
+
+.login__logo {
+  display: block;
+  width: min(100%, 300px);
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 12px 22px rgba(0, 0, 0, 0.25));
 }
 
 .login__marca-texto h1 {
