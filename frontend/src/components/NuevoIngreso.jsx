@@ -276,7 +276,6 @@ const saldo = manoObraNum - totalCobradoNum; // positivo = falta cobrar
                 id="observaciones"
                 name="observaciones"
                 rows="2"
-                placeholder="Notas para el próximo ingreso"
                 value={datos.observaciones}
                 onChange={cambiarDato}
               />

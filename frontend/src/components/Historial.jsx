@@ -16,7 +16,7 @@ const pesos = new Intl.NumberFormat("es-AR", {
 function Historial({ onSeleccionar }) {
   const consulta = useCallback(() => listarHistorial(), []);
   const { cargando, error, datos } = useConsulta(consulta, []);
-  const ingresos = datos ?? [];
+  const ingresos = useMemo(() => datos ?? [], [datos]);
 
   const [desde, setDesde] = useState("");
   const [hasta, setHasta] = useState("");

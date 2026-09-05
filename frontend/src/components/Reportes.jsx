@@ -183,7 +183,6 @@ function Reportes() {
     totalIngresosMecanicos,
     saldos,
   } = datos;
-  const maximoMensual = Math.max(1, ...facturacionMensual.map((m) => m.total));
   const maximoMecanico = Math.max(1, ...porMecanico.map((m) => m.facturado));
   const maximoIngresoMecanico = Math.max(
     1,

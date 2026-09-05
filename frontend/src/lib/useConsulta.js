@@ -16,6 +16,8 @@ export function useConsulta(consulta, inicial = null) {
 
   useEffect(() => {
     if (!consulta) {
+      // El reset es necesario cuando un acordeón se cierra.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setEstado({ cargando: false, error: null, datos: inicial });
       return;
     }
