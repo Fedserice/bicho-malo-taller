@@ -131,3 +131,29 @@
     align-self: center;
   }
 }
+.historial__filtros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: end;
+  margin-bottom: 16px;
+}
+.historial__filtros .campo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.historial__filtros .campo--busqueda {
+  flex: 1;
+  min-width: 200px;
+}
+.historial__limpiar-filtros {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.85rem;
+  opacity: 0.7;
+}
+.historial__limpiar-filtros:hover {
+  opacity: 1;
+}

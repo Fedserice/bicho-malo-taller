@@ -257,3 +257,16 @@
 .inicio .buscador {
   margin-bottom: 4px;
 }
+.cifra__valor--con-ojo {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.cifra__ojo {
+  display: inline-flex;
+  color: inherit;
+  opacity: 0.6;
+}
+.cifra__ojo:hover {
+  opacity: 1;
+}

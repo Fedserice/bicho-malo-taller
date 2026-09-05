@@ -10,6 +10,11 @@ import { supabase } from "./supabase";
 
 const ESTADOS = ["En reparación", "Finalizado", "Entregado"];
 
+// Mecánicos con reparto especial de facturación (ver obtenerReportes).
+// Román y Juan facturan el 30% de su propia mano de obra; el 70%
+// restante de cada uno se suma a Gonzalo, además del 100% de lo suyo.
+const NOMBRE_GONZALO = "Gonzalo"; // ajustar si en la base figura distinto (mayúsculas/acento)
+
 function numero(valor) {
   if (valor === "" || valor === null || valor === undefined) return null;
   const n = Number(valor);
@@ -18,6 +23,16 @@ function numero(valor) {
 
 function texto(valor) {
   return (valor ?? "").toString();
+}
+
+// Saca mayúsculas y acentos para comparar nombres de mecánico sin
+// depender de cómo estén tipeados ("Román" === "roman" === "ROMAN").
+function normalizarNombre(valor) {
+  return texto(valor)
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
 }
 
 const REGEX_PATENTE = /^([A-Z]{3}\d{3}|[A-Z]{2}\d{3}[A-Z]{2})$/;
@@ -54,9 +69,9 @@ function desdeFilaVisita(fila) {
     diagnostico: texto(fila.diagnostico),
     trabajos: texto(fila.trabajos),
     manoObra: fila.mano_obra ?? "",
-    totalTrabajo: fila.total_trabajo ?? "",
+    totalTrabajo: fila.total_trabajo ?? "", // en desuso, se conserva por compatibilidad
     totalCobrado: fila.total_cobrado ?? "",
-    saldo: Number(fila.saldo) || 0,
+    saldo: Number(fila.saldo) || 0, // positivo = falta cobrar (mano_obra - total_cobrado)
     mecanico: texto(fila.mecanico),
     estado: texto(fila.estado),
     pendientes: texto(fila.pendientes),
@@ -73,8 +88,10 @@ function haciaFilaVisita(datos) {
     diagnostico: texto(datos.diagnostico),
     trabajos: texto(datos.trabajos),
     mano_obra: numero(datos.manoObra),
-    total_trabajo: numero(datos.totalTrabajo),
     total_cobrado: numero(datos.totalCobrado),
+    // total_trabajo ya no se toca desde el formulario: si se manda
+    // siempre null, se pisan datos viejos en cada edición. Se deja
+    // la columna intacta hasta que decidan borrarla del todo.
     mecanico: texto(datos.mecanico),
     estado: texto(datos.estado) || "En reparación",
     pendientes: texto(datos.pendientes),
@@ -362,6 +379,23 @@ export async function cambiarEstadoVisita(visitaId, estado) {
 }
 
 /**
+ * Actualiza solo lo cobrado de una visita ya entregada — pensado para
+ * corregir el saldo pendiente desde Historial o Reportes sin tener
+ * que reabrir toda la ficha.
+ */
+export async function actualizarCobroVisita(visitaId, totalCobrado) {
+  const { data, error } = await supabase
+    .from("visitas")
+    .update({ total_cobrado: numero(totalCobrado) })
+    .eq("id", visitaId)
+    .select(COLUMNAS_VISITA)
+    .single();
+
+  reventar(error);
+  return desdeFilaVisita(data);
+}
+
+/**
  * Guarda un ingreso desde el formulario. Si `datos.id` está presente,
  * actualiza esa visita (y los datos del vehículo/cliente si cambiaron).
  * Si no, busca o crea el vehículo y arma una visita nueva.
@@ -405,20 +439,36 @@ export async function guardarIngreso(datos, opciones = {}) {
 // Resumen del dashboard
 // ------------------------------------------------------------
 
+/**
+ * "En taller" es una foto del presente y no se reinicia nunca.
+ * "Entregados" y "facturado" sí se reinician cada mes: acá se logra
+ * simplemente mirando solo las visitas entregadas desde el día 1 del
+ * mes actual. No hace falta mover ni borrar filas — el historial
+ * completo sigue disponible en Reportes, mes por mes.
+ */
 export async function obtenerResumen() {
-  const [enTaller, entregadas] = await Promise.all([
+  const ahora = new Date();
+  const inicioMes = new Date(ahora.getFullYear(), ahora.getMonth(), 1)
+    .toISOString()
+    .slice(0, 10);
+
+  const [enTaller, entregadasDelMes] = await Promise.all([
     supabase
       .from("vehiculos_resumen")
       .select("id", { count: "exact", head: true })
       .neq("estado", "Entregado")
       .not("estado", "is", null),
-    supabase.from("visitas").select("total_cobrado").eq("estado", "Entregado"),
+    supabase
+      .from("visitas")
+      .select("total_cobrado")
+      .eq("estado", "Entregado")
+      .gte("fecha", inicioMes),
   ]);
 
   reventar(enTaller.error);
-  reventar(entregadas.error);
+  reventar(entregadasDelMes.error);
 
-  const filas = entregadas.data ?? [];
+  const filas = entregadasDelMes.data ?? [];
 
   return {
     enTaller: enTaller.count ?? 0,
@@ -450,26 +500,19 @@ function claveMes(fechaTexto) {
 function nombreMes(clave) {
   const [anio, mes] = clave.split("-").map(Number);
   const fecha = new Date(anio, mes - 1, 1);
-  const texto = fecha.toLocaleDateString("es-AR", { month: "short", year: "2-digit" });
-  return texto.charAt(0).toUpperCase() + texto.slice(1).replace(".", "");
+  const t = fecha.toLocaleDateString("es-AR", { month: "short", year: "2-digit" });
+  return t.charAt(0).toUpperCase() + t.slice(1).replace(".", "");
 }
 
 /**
- * Arma los datos de la pantalla de Reportes a partir de las visitas
- * entregadas: facturación de los últimos 6 meses y desempeño por
- * mecánico. Todo se calcula en el cliente para no depender de
- * funciones extra en la base.
- */
-/**
- * Trabajos con plata sin cobrar. El saldo lo calcula la base
- * (`total_trabajo − total_cobrado`), así que acá solo se piden los
- * que dan mayor a cero: si un trabajo está saldado, no aparece.
+ * Trabajos con plata sin cobrar. `saldo` ya viene calculado por la
+ * base como (mano_obra - total_cobrado): positivo = falta cobrar.
  */
 export async function obtenerSaldosPendientes() {
   const { data, error } = await supabase
     .from("visitas")
     .select(
-      "id, fecha, estado, total_trabajo, total_cobrado, saldo, vehiculos ( id, patente, vehiculo, clientes ( nombre, telefono ) )"
+      "id, fecha, estado, mano_obra, total_cobrado, saldo, vehiculos ( id, patente, vehiculo, clientes ( nombre, telefono ) )"
     )
     .gt("saldo", 0)
     .order("saldo", { ascending: false });
@@ -485,7 +528,7 @@ export async function obtenerSaldosPendientes() {
     telefono: texto(fila.vehiculos?.clientes?.telefono),
     fecha: fila.fecha ?? "",
     estado: texto(fila.estado),
-    total: Number(fila.total_trabajo) || 0,
+    manoObra: Number(fila.mano_obra) || 0,
     cobrado: Number(fila.total_cobrado) || 0,
     saldo: Number(fila.saldo) || 0,
   }));
@@ -513,6 +556,50 @@ export async function obtenerSaldosPendientes() {
   };
 }
 
+/**
+ * Reparto de facturación por mecánico:
+ * - Román y Juan facturan el 30% de su propia mano de obra.
+ * - Gonzalo factura el 70% restante de Román, el 70% restante de
+ *   Juan, más el 100% de lo que hizo él mismo.
+ * - Cualquier otro mecánico factura el 100% de su mano de obra
+ *   (no hay regla especial definida para ellos).
+ * La base de cálculo es `mano_obra`, no `total_cobrado`.
+ */
+function calcularFacturacionPorMecanico(visitas) {
+  const porMecanico = new Map();
+
+  function sumar(nombre, monto, cuentaComoTrabajo) {
+    const actual = porMecanico.get(nombre) ?? { nombre, trabajos: 0, facturado: 0 };
+    actual.facturado += monto;
+    if (cuentaComoTrabajo) actual.trabajos += 1;
+    porMecanico.set(nombre, actual);
+  }
+
+  for (const v of visitas) {
+    const nombreOriginal = texto(v.mecanico).trim() || "Sin asignar";
+    const clave = normalizarNombre(nombreOriginal);
+    const manoObra = Number(v.mano_obra) || 0;
+
+    if (clave === "roman" || clave === "juan") {
+      sumar(nombreOriginal, manoObra * 0.3, true);
+      sumar(NOMBRE_GONZALO, manoObra * 0.7, false);
+    } else if (clave === "gonzalo") {
+      sumar(NOMBRE_GONZALO, manoObra, true);
+    } else {
+      sumar(nombreOriginal, manoObra, true);
+    }
+  }
+
+  return [...porMecanico.values()].sort((a, b) => b.facturado - a.facturado);
+}
+
+/**
+ * Datos completos de Reportes: facturación mensual (todos los meses
+ * con datos, no solo los últimos), reparto por mecánico y saldos
+ * pendientes. `facturacionMensual` es lo que alimenta el apartado
+ * "mes por mes" — cada entrada se puede abrir con
+ * `listarVisitasDelMes(clave)`.
+ */
 export async function obtenerReportes() {
   const [{ data, error }, saldos] = await Promise.all([
     supabase
@@ -525,30 +612,23 @@ export async function obtenerReportes() {
   reventar(error);
   const visitas = data ?? [];
 
-  // Facturación por mes, últimos 6 meses con datos.
+  // Facturación por mes — todos los meses con datos, más reciente primero.
   const porMes = new Map();
   for (const v of visitas) {
     const clave = claveMes(v.fecha);
     if (!clave) continue;
     porMes.set(clave, (porMes.get(clave) ?? 0) + (Number(v.total_cobrado) || 0));
   }
-  const meses = [...porMes.keys()].sort().slice(-6);
-  const facturacionMensual = meses.map((clave) => ({
-    clave,
-    mes: nombreMes(clave),
-    total: porMes.get(clave) ?? 0,
-  }));
+  const facturacionMensual = [...porMes.keys()]
+    .sort()
+    .reverse()
+    .map((clave) => ({
+      clave,
+      mes: nombreMes(clave),
+      total: porMes.get(clave) ?? 0,
+    }));
 
-  // Desempeño por mecánico.
-  const porMecanico = new Map();
-  for (const v of visitas) {
-    const nombre = texto(v.mecanico).trim() || "Sin asignar";
-    const actual = porMecanico.get(nombre) ?? { nombre, trabajos: 0, facturado: 0 };
-    actual.trabajos += 1;
-    actual.facturado += Number(v.total_cobrado) || 0;
-    porMecanico.set(nombre, actual);
-  }
-  const porMecanicoLista = [...porMecanico.values()].sort((a, b) => b.facturado - a.facturado);
+  const porMecanico = calcularFacturacionPorMecanico(visitas);
 
   const totalFacturado = visitas.reduce((acc, v) => acc + (Number(v.total_cobrado) || 0), 0);
   const totalManoObra = visitas.reduce((acc, v) => acc + (Number(v.mano_obra) || 0), 0);
@@ -558,7 +638,40 @@ export async function obtenerReportes() {
     totalManoObra,
     trabajosEntregados: visitas.length,
     facturacionMensual,
-    porMecanico: porMecanicoLista,
+    porMecanico,
     saldos,
   };
+}
+
+/** Detalle de trabajos entregados en un mes puntual ("2026-09"). Alimenta el drill-down de Reportes. */
+export async function listarVisitasDelMes(claveMes) {
+  const [anio, mes] = claveMes.split("-").map(Number);
+  const inicio = `${claveMes}-01`;
+  const fin = new Date(anio, mes, 1).toISOString().slice(0, 10); // primer día del mes siguiente
+
+  const { data, error } = await supabase
+    .from("visitas")
+    .select(
+      "id, fecha, mano_obra, total_cobrado, saldo, mecanico, trabajos, vehiculos ( id, patente, vehiculo, clientes ( nombre ) )"
+    )
+    .eq("estado", "Entregado")
+    .gte("fecha", inicio)
+    .lt("fecha", fin)
+    .order("fecha", { ascending: false });
+
+  reventar(error);
+
+  return (data ?? []).map((fila) => ({
+    id: fila.id,
+    vehiculoId: fila.vehiculos?.id ?? null,
+    fecha: fila.fecha ?? "",
+    manoObra: Number(fila.mano_obra) || 0,
+    totalCobrado: Number(fila.total_cobrado) || 0,
+    saldo: Number(fila.saldo) || 0,
+    mecanico: texto(fila.mecanico),
+    trabajos: texto(fila.trabajos),
+    patente: texto(fila.vehiculos?.patente),
+    vehiculo: texto(fila.vehiculos?.vehiculo),
+    cliente: texto(fila.vehiculos?.clientes?.nombre),
+  }));
 }

@@ -1,9 +1,10 @@
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import Icon from "../ui/Icon";
 import Patente from "../ui/Patente";
 import EstadoChip from "../ui/EstadoChip";
 import { Cargando, ErrorDatos } from "../ui/Estados";
-import { obtenerReportes } from "../lib/datos";
+import { useToast } from "../ui/useToast";
+import { obtenerReportes, listarVisitasDelMes, actualizarCobroVisita } from "../lib/datos";
 import { useConsulta } from "../lib/useConsulta";
 import "./Reportes.css";
 
@@ -13,9 +14,161 @@ const pesos = new Intl.NumberFormat("es-AR", {
   maximumFractionDigits: 0,
 });
 
+/** Registra un pago sobre una visita: suma el monto ingresado al total cobrado. */
+function RegistrarPago({ visitaId, manoObra, cobradoActual, onGuardado }) {
+  const [abierto, setAbierto] = useState(false);
+  const [monto, setMonto] = useState("");
+  const [guardando, setGuardando] = useState(false);
+  const avisar = useToast();
+
+  const montoNum = Number(monto) || 0;
+  const nuevoCobrado = cobradoActual + montoNum;
+  const nuevoSaldo = manoObra - nuevoCobrado;
+
+  async function guardar() {
+    if (montoNum <= 0) {
+      avisar("Ingresá un monto mayor a 0", "error");
+      return;
+    }
+
+    setGuardando(true);
+
+    try {
+      await actualizarCobroVisita(visitaId, nuevoCobrado);
+      avisar("Pago registrado", "ok");
+      setAbierto(false);
+      setMonto("");
+      onGuardado();
+    } catch (error) {
+      avisar(error.message || "No se pudo registrar el pago", "error");
+    } finally {
+      setGuardando(false);
+    }
+  }
+
+  if (!abierto) {
+    return (
+      <button type="button" className="reportes__pago-boton" onClick={() => setAbierto(true)}>
+        Registrar pago
+      </button>
+    );
+  }
+
+  return (
+    <span className="reportes__pago-form">
+      <input
+        type="number"
+        inputMode="numeric"
+        className="reportes__pago-input"
+        placeholder="Monto pagado"
+        value={monto}
+        onChange={(e) => setMonto(e.target.value)}
+        autoFocus
+      />
+
+      {montoNum > 0 && (
+        <span className="reportes__pago-preview num">Nuevo saldo: {pesos.format(nuevoSaldo)}</span>
+      )}
+
+      <button
+        type="button"
+        className="btn-icon"
+        onClick={guardar}
+        disabled={guardando}
+        aria-label="Confirmar pago"
+        title="Confirmar"
+      >
+        <Icon name="tilde" size={14} />
+      </button>
+
+      <button
+        type="button"
+        className="btn-icon"
+        onClick={() => {
+          setAbierto(false);
+          setMonto("");
+        }}
+        disabled={guardando}
+        aria-label="Cancelar"
+        title="Cancelar"
+      >
+        <Icon name="cerrar" size={14} />
+      </button>
+    </span>
+  );
+}
+
+/** Acordeón de un mes: al abrirse, trae el detalle de trabajos entregados ese mes. */
+function MesAcordeon({ mes }) {
+  const [abierto, setAbierto] = useState(false);
+  const consulta = useCallback(() => listarVisitasDelMes(mes.clave), [mes.clave]);
+  const { cargando, error, datos, recargar } = useConsulta(abierto ? consulta : null, []);
+  const visitas = datos ?? [];
+
+  return (
+    <div className="reportes__mes">
+      <button
+        type="button"
+        className="reportes__mes-head"
+        onClick={() => setAbierto((v) => !v)}
+        aria-expanded={abierto}
+      >
+        <span className="reportes__mes-nombre">{mes.mes}</span>
+        <span className="reportes__mes-total num">{pesos.format(mes.total)}</span>
+        <Icon
+          name="chevron"
+          size={16}
+          className={`reportes__mes-flecha ${abierto ? "reportes__mes-flecha--abierta" : ""}`}
+        />
+      </button>
+
+      {abierto && (
+        <div className="reportes__mes-detalle">
+          {cargando && <Cargando texto="Trayendo los trabajos del mes…" />}
+          {error && <ErrorDatos mensaje={error} />}
+          {!cargando && !error && visitas.length === 0 && (
+            <p className="reportes__vacio">No hay trabajos entregados este mes.</p>
+          )}
+          {!cargando && visitas.length > 0 && (
+            <ul className="reportes__mes-lista">
+              {visitas.map((v) => (
+                <li className="reportes__mes-item" key={v.id}>
+                  <Patente valor={v.patente} tamano="sm" />
+                  <span className="reportes__mes-item-info">
+                    <span className="reportes__mes-item-vehiculo">
+                      {v.vehiculo || "Vehículo sin cargar"}
+                    </span>
+                    <span className="reportes__mes-item-cliente">
+                      {v.cliente || "Sin cliente"} · {v.mecanico || "Sin mecánico"}
+                    </span>
+                  </span>
+                  <span className="reportes__mes-item-montos num">
+                    <span>Cobrado {pesos.format(v.totalCobrado)}</span>
+                    {v.saldo > 0 && (
+                      <span className="reportes__mes-item-deuda">
+                        Debe {pesos.format(v.saldo)}
+                      </span>
+                    )}
+                  </span>
+                  <RegistrarPago
+                    visitaId={v.id}
+                    manoObra={v.manoObra}
+                    cobradoActual={v.totalCobrado}
+                    onGuardado={recargar}
+                  />
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function Reportes() {
   const consulta = useCallback(() => obtenerReportes(), []);
-  const { cargando, error, datos } = useConsulta(consulta, null);
+  const { cargando, error, datos, recargar } = useConsulta(consulta, null);
 
   if (cargando) return <Cargando texto="Calculando los números del taller…" />;
   if (error) return <ErrorDatos mensaje={error} />;
@@ -112,11 +265,18 @@ function Reportes() {
                   <EstadoChip estado={t.estado} />
 
                   <span className="saldo__cuentas num">
-                    <span className="saldo__linea">Total {pesos.format(t.total)}</span>
+                    <span className="saldo__linea">Mano de obra {pesos.format(t.manoObra)}</span>
                     <span className="saldo__linea">Cobrado {pesos.format(t.cobrado)}</span>
                   </span>
 
                   <span className="saldo__monto num">{pesos.format(t.saldo)}</span>
+
+                  <RegistrarPago
+                    visitaId={t.id}
+                    manoObra={t.manoObra}
+                    cobradoActual={t.cobrado}
+                    onGuardado={recargar}
+                  />
                 </li>
               ))}
             </ul>
@@ -129,27 +289,19 @@ function Reportes() {
         )}
       </section>
 
+      {/* FACTURACIÓN MES A MES — cada mes se abre y muestra su detalle */}
       <section className="bloque bloque--ancho reportes__bloque">
         <h2 className="bloque__titulo">
           <Icon name="grafico" size={17} />
-          Facturación de los últimos meses
+          Facturación por mes
         </h2>
 
         {facturacionMensual.length === 0 ? (
-          <p className="reportes__vacio">Todavía no hay trabajos entregados para graficar.</p>
+          <p className="reportes__vacio">Todavía no hay trabajos entregados para mostrar.</p>
         ) : (
-          <div className="reportes__barras">
+          <div className="reportes__meses">
             {facturacionMensual.map((mes) => (
-              <div className="reportes__barra-fila" key={mes.clave}>
-                <span className="reportes__barra-label">{mes.mes}</span>
-                <div className="reportes__barra-pista">
-                  <div
-                    className="reportes__barra-valor"
-                    style={{ width: `${(mes.total / maximoMensual) * 100}%` }}
-                  />
-                </div>
-                <span className="reportes__barra-num num">{pesos.format(mes.total)}</span>
-              </div>
+              <MesAcordeon key={mes.clave} mes={mes} />
             ))}
           </div>
         )}

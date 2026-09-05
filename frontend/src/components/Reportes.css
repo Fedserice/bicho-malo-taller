@@ -263,3 +263,102 @@
     text-align: right;
   }
 }
+.reportes__meses {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.reportes__mes {
+  border: 1px solid var(--borde, #e5e5e5);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.reportes__mes-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 14px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+}
+.reportes__mes-nombre {
+  flex: 1;
+  font-weight: 600;
+}
+.reportes__mes-flecha {
+  transition: transform 0.15s ease;
+}
+.reportes__mes-flecha--abierta {
+  transform: rotate(90deg);
+}
+.reportes__mes-detalle {
+  padding: 8px 14px 14px;
+  border-top: 1px solid var(--borde, #e5e5e5);
+}
+.reportes__mes-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.reportes__mes-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+}
+.reportes__mes-item-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.reportes__mes-item-cliente {
+  font-size: 0.85rem;
+  opacity: 0.7;
+}
+.reportes__mes-item-montos {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  font-size: 0.85rem;
+}
+.reportes__mes-item-deuda {
+  color: #c0392b;
+}
+.reportes__editor-cobro {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.reportes__editor-cobro-input {
+  width: 90px;
+  padding: 2px 6px;
+}
+.reportes__pago-boton {
+  font-size: 0.8rem;
+  padding: 4px 10px;
+  border: 1px solid var(--borde, #e5e5e5);
+  border-radius: 8px;
+  background: none;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.reportes__pago-boton:hover {
+  background: var(--fondo-hover, #f5f5f5);
+}
+.reportes__pago-form {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.reportes__pago-input {
+  width: 100px;
+  padding: 3px 6px;
+}
+.reportes__pago-preview {
+  font-size: 0.8rem;
+  opacity: 0.75;
+  white-space: nowrap;
+}

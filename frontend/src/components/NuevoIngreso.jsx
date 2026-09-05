@@ -17,7 +17,6 @@ const ESTADO_INICIAL = {
   diagnostico: "",
   trabajos: "",
   manoObra: "",
-  totalTrabajo: "",
   totalCobrado: "",
   mecanico: "",
   estado: "En reparación",
@@ -155,8 +154,9 @@ function NuevoIngreso({ onVolver, ingreso }) {
     }
   }
 
-  const totalTrabajoNum = Number(datos.totalTrabajo) || 0;
-  const saldo = totalTrabajoNum - (Number(datos.totalCobrado) || 0);
+  const manoObraNum = Number(datos.manoObra) || 0;
+const totalCobradoNum = Number(datos.totalCobrado) || 0;
+const saldo = manoObraNum - totalCobradoNum; // positivo = falta cobrar
 
   const claseCampo = (campo) => `campo ${faltantes.includes(campo) ? "campo--error" : ""}`.trim();
 
@@ -343,21 +343,8 @@ function NuevoIngreso({ onVolver, ingreso }) {
               />
             </div>
 
-            <div className={claseCampo("totalTrabajo")}>
-              <label htmlFor="totalTrabajo">Total del trabajo</label>
-              <input
-                id="totalTrabajo"
-                name="totalTrabajo"
-                type="number"
-                inputMode="numeric"
-                placeholder="0"
-                value={datos.totalTrabajo}
-                onChange={cambiarDato}
-              />
-            </div>
-
             {/* El total cobrado va aparte: es la plata que entró */}
-            <div className={`${claseCampo("totalCobrado")} ancho-2 total`}>
+            <div className={`${claseCampo("totalCobrado")} total`}>
               <label htmlFor="totalCobrado">Total cobrado</label>
               <div className="total__campo">
                 <span className="total__signo" aria-hidden="true">
@@ -375,14 +362,11 @@ function NuevoIngreso({ onVolver, ingreso }) {
               </div>
 
               {/* El saldo se muestra en vivo: es lo que va a Reportes */}
-              {saldo > 0 && (
-                <span className="total__ayuda total__ayuda--deuda num">
-                  Saldo pendiente: {pesos.format(saldo)}
-                </span>
-              )}
-              {saldo <= 0 && totalTrabajoNum > 0 && (
+              
+                {saldo > 0 && ( <span className="total__ayuda num total__ayuda--deuda"> Saldo pendiente: {pesos.format(saldo)} </span> )} {saldo <= 0 && totalCobradoNum > 0 && ( <span className="total__ayuda total__ayuda--saldado">Trabajo saldado</span> )}
+              {saldo <= 0 && totalCobradoNum > 0 && (
                 <span className="total__ayuda total__ayuda--saldado">Trabajo saldado</span>
-              )}
+                  )}
             </div>
           </div>
         </section>
