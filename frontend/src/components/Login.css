@@ -10,24 +10,17 @@
   min-height: 100vh;
   display: flex;
   align-items: stretch;
-  background:
-    radial-gradient(circle at top left, rgba(212, 102, 31, 0.14), transparent 30%),
-    linear-gradient(135deg, #111310 0%, #1b1d1a 38%, #0f1110 100%);
+  background: #252724;
   overflow: hidden;
 }
 
 .franja {
   position: absolute;
-  inset: -24% -10% auto -18%;
-  height: 140%;
-  background: repeating-linear-gradient(
-    -18deg,
-    rgba(244, 170, 110, 0.12) 0px,
-    rgba(244, 170, 110, 0.12) 2px,
-    transparent 2px,
-    transparent 48px
-  );
-  opacity: 0.7;
+  inset: 0 auto 0 0;
+  width: 9px;
+  height: auto;
+  background: var(--accent);
+  opacity: 1;
   pointer-events: none;
 }
 
@@ -35,12 +28,13 @@
   position: relative;
   z-index: 1;
   display: grid;
-  grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
+  grid-template-columns: minmax(0, 1.25fr) minmax(360px, 0.75fr);
   width: 100%;
-  max-width: 1100px;
+  max-width: 1180px;
   margin: 0 auto;
-  padding: 28px;
-  gap: 0;
+  min-height: 100vh;
+  padding: 48px 64px;
+  gap: 72px;
 }
 
 @media (max-width: 860px) {
@@ -54,12 +48,12 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 30px;
-  padding: 54px 48px 58px;
-  background: linear-gradient(180deg, rgba(16, 18, 17, 0.88), rgba(17, 19, 18, 0.98));
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-right: none;
-  box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.04);
+  gap: 38px;
+  padding: 20px 0;
+  background: transparent;
+  border: 0;
+  border-right: 0;
+  box-shadow: none;
   color: var(--ink-inv);
 }
 
@@ -82,11 +76,12 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 7px 12px;
-  border: 1px solid rgba(255, 138, 61, 0.35);
-  border-radius: var(--r-pill);
-  background: rgba(255, 138, 61, 0.08);
-  color: #f4c39d;
+  padding: 6px 0;
+  border: 0;
+  border-bottom: 1px solid rgba(255, 154, 103, 0.7);
+  border-radius: 0;
+  background: transparent;
+  color: #ff9a67;
   font-size: 0.7rem;
   font-weight: 700;
   letter-spacing: 0.12em;
@@ -95,12 +90,15 @@
 
 .login__logo {
   display: block;
-  width: min(100%, 290px);
+  width: min(100%, 360px);
   max-height: 120px;
-  padding: 0;
-  background: transparent;
+  padding: 10px 14px;
+  background: var(--surface);
+  border: 1px solid #d5d0c5;
+  border-left: 5px solid var(--accent);
+  box-shadow: 5px 5px 0 var(--accent);
   object-fit: contain;
-  filter: drop-shadow(0 18px 28px rgba(0, 0, 0, 0.35));
+  filter: none;
 }
 
 .login__marca-texto {
@@ -113,14 +111,14 @@
   display: flex;
   flex-direction: column;
   color: var(--ink-inv);
-  font-size: clamp(2.6rem, 2rem + 2.6vw, 4rem);
+  font-size: clamp(3rem, 2rem + 4vw, 5.8rem);
   line-height: 0.86;
-  letter-spacing: -0.06em;
+  letter-spacing: -0.08em;
   text-transform: none;
 }
 
 .login__marca-texto h1 span {
-  color: var(--accent-inv);
+  color: #ff9a67;
 }
 
 .login__marca-texto p {
@@ -143,20 +141,18 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 10px 12px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.04);
+  padding: 10px 0;
+  border-radius: 0;
+  background: transparent;
+  border: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.16);
   font-size: 0.96rem;
   color: rgba(250, 250, 248, 0.8);
 }
 
 .login__lista .icon {
   flex: none;
-  padding: 7px;
-  border-radius: 9px;
-  background: rgba(255, 138, 61, 0.12);
-  color: var(--accent-inv);
+  color: #ff9a67;
 }
 
 .login__acceso {
@@ -164,12 +160,11 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 20px;
-  padding: 52px 36px 40px;
-  background: rgba(18, 20, 18, 0.38);
-  backdrop-filter: blur(2px);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-left: none;
+  gap: 26px;
+  padding: 20px 0;
+  background: transparent;
+  border: 0;
+  border-left: 0;
 }
 
 @media (max-width: 860px) {
@@ -183,14 +178,14 @@
 .login__caja {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 28px;
   width: 100%;
   max-width: 390px;
-  padding: 30px 26px 24px;
-  background: rgba(250, 250, 248, 0.96);
-  border: 1px solid rgba(28, 29, 27, 0.08);
-  border-radius: 22px;
-  box-shadow: 0 22px 55px rgba(0, 0, 0, 0.24);
+  padding: 34px 32px 30px;
+  background: var(--surface);
+  border: 0;
+  border-radius: var(--r);
+  box-shadow: 10px 10px 0 var(--accent);
 }
 
 .login__caja-head {
@@ -204,12 +199,12 @@
   align-items: center;
   justify-content: center;
   flex: none;
-  width: 46px;
-  height: 46px;
-  border-radius: 14px;
-  background: linear-gradient(135deg, rgba(212, 102, 31, 0.16), rgba(212, 102, 31, 0.05));
-  border: 1px solid rgba(212, 102, 31, 0.25);
-  color: var(--accent-ink);
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 0;
+  color: var(--on-accent);
 }
 
 .login__caja-head h2 {
@@ -245,10 +240,10 @@
 
 .campo input {
   width: 100%;
-  padding: 14px 16px;
+  padding: 13px 14px;
   border: 1px solid var(--line);
-  border-radius: 12px;
-  background: #f5f5f2;
+  border-radius: var(--r-sm);
+  background: var(--surface-2);
   color: var(--ink);
   transition: border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
 }
@@ -259,8 +254,8 @@
 
 .campo input:focus {
   outline: none;
-  border-color: rgba(212, 102, 31, 0.7);
-  box-shadow: 0 0 0 4px rgba(212, 102, 31, 0.12);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-ring);
 }
 
 .login__clave {
@@ -303,14 +298,14 @@
 }
 
 .btn--primary {
-  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-hover) 100%);
-  color: #fffaf5;
-  border: 1px solid rgba(122, 51, 8, 0.2);
-  box-shadow: 0 12px 18px rgba(212, 102, 31, 0.2);
+  background: var(--accent);
+  color: var(--on-accent);
+  border: 1px solid var(--accent);
+  box-shadow: none;
 }
 
 .btn--primary:hover {
-  background: linear-gradient(135deg, #e27a35 0%, var(--accent) 100%);
+  background: var(--accent-hover);
 }
 
 .btn--lg {
@@ -323,10 +318,10 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 10px 16px;
-  border-radius: var(--r-pill);
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 10px 0;
+  border-radius: 0;
+  background: transparent;
+  border: 0;
   color: rgba(250, 250, 248, 0.7);
   font-size: 0.8rem;
 }

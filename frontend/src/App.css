@@ -4,6 +4,8 @@
    ============================================================ */
 
 .app {
+  position: relative;
+  isolation: isolate;
   display: flex;
   flex-direction: column;
   min-height: 100svh;
@@ -13,11 +15,8 @@
 .franja {
   height: 4px;
   flex: none;
-  background: repeating-linear-gradient(
-    -45deg,
-    var(--accent) 0 10px,
-    var(--ink) 10px 20px
-  );
+  background: var(--accent);
+  box-shadow: 0 1px 0 rgba(23, 33, 30, 0.08);
 }
 
 /* ------------------------------------------------------------
@@ -29,8 +28,7 @@
   top: 0;
   z-index: 50;
   flex: none;
-  background: color-mix(in srgb, var(--surface) 88%, transparent);
-  backdrop-filter: saturate(180%) blur(12px);
+  background: var(--surface);
   border-bottom: 1px solid var(--line);
 }
 
@@ -39,7 +37,7 @@
   align-items: center;
   gap: 12px;
   max-width: var(--page-max);
-  min-height: var(--topbar-h);
+  min-height: 64px;
   margin: 0 auto;
   padding: 0 16px;
 }
@@ -136,7 +134,7 @@
   width: 100%;
   max-width: var(--page-max);
   margin: 0 auto;
-  padding: 28px 16px 112px;
+  padding: 46px 16px 112px;
   animation: bm-rise var(--dur) var(--ease-out);
 }
 

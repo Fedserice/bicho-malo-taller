@@ -1,35 +1,35 @@
 /* ============================================================
-   BICHO MALO TALLER — Fundaciones del sistema de diseño
-   Concreto de box + óxido quemado · Big Shoulders Display / IBM Plex Sans
+  BICHO MALO TALLER — Fundaciones del sistema de diseño
+  Estudio técnico minimalista · Manrope / IBM Plex Sans
    ============================================================ */
 
 :root {
   /* --- Superficies y líneas: piso de concreto del box, gris neutro
      (el óxido queda para el acento, no para bañar toda la pantalla) --- */
-  --bg: #e3e4e0;
-  --surface: #fafaf8;
-  --surface-2: #eeeeea;
-  --surface-3: #e1e1db;
-  --line: #cfcfc5;
-  --line-strong: #b2b2a4;
+  --bg: #e9e6df;
+  --surface: #f7f5ef;
+  --surface-2: #efede6;
+  --surface-3: #dedbd2;
+  --line: #d0ccc1;
+  --line-strong: #aaa59a;
 
   /* --- Tinta: grafito neutro --- */
-  --ink: #1c1d1b;
-  --ink-2: #45463f;
-  --ink-3: #616256;
-  --ink-inv: #fafaf8;
+  --ink: #171817;
+  --ink-2: #3f403c;
+  --ink-3: #777770;
+  --ink-inv: #f7f5ef;
 
   /* --- Acento: óxido quemado, como el fierro viejo del taller ---
      `--on-accent` va oscuro encima: el óxido es demasiado medio-tono
      para blanco. `--accent-inv` es el que se apoya sobre paneles oscuros. */
-  --accent: #d4661f;
-  --accent-hover: #e2782f;
-  --accent-soft: #f5e1ce;
-  --accent-line: #e3ad7c;
-  --accent-ring: rgba(203, 90, 23, 0.28);
-  --accent-ink: #7a3308;
-  --accent-inv: #ff8a3d;
-  --on-accent: #1c150d;
+  --accent: #e35f27;
+  --accent-hover: #bd4317;
+  --accent-soft: #f6d8c8;
+  --accent-line: #e9a789;
+  --accent-ring: rgba(227, 95, 39, 0.22);
+  --accent-ink: #8d2e0d;
+  --accent-inv: #ff9a67;
+  --on-accent: #ffffff;
 
   /* --- Semánticos de estado --- */
   --ok: #3f7d46;
@@ -54,15 +54,15 @@
   /* --- Sombras: la de reposo es casi plana (una línea), la que
      flota (menú, aviso) es un sello duro — un solo golpe gráfico,
      no el mismo desenfoque gris repetido en cada tarjeta. --- */
-  --shadow-1: 0 1px 2px rgba(33, 28, 22, 0.08);
-  --shadow-2: 0 6px 16px -4px rgba(33, 28, 22, 0.18), 0 2px 6px -2px rgba(33, 28, 22, 0.12);
-  --shadow-3: 4px 4px 0 0 var(--ink);
+  --shadow-1: 0 1px 0 rgba(23, 24, 23, 0.12);
+  --shadow-2: 0 8px 0 rgba(23, 24, 23, 0.08);
+  --shadow-3: 8px 8px 0 rgba(23, 24, 23, 0.12);
 
   /* --- Radios: cortados, como cartulina de ticket, no burbuja de app --- */
-  --r-sm: 3px;
-  --r: 5px;
-  --r-lg: 6px;
-  --r-xl: 9px;
+  --r-sm: 2px;
+  --r: 3px;
+  --r-lg: 4px;
+  --r-xl: 5px;
   --r-pill: 999px;
 
   /* --- Tipografía ---
@@ -162,6 +162,8 @@ body {
   margin: 0;
   min-height: 100svh;
   background-color: var(--bg);
+  background-image: linear-gradient(rgba(23, 24, 23, 0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(23, 24, 23, 0.025) 1px, transparent 1px);
+  background-size: 24px 24px;
   color: var(--ink-2);
 }
 
