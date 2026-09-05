@@ -71,6 +71,7 @@ function Login() {
         {/* Panel de marca: la chapa es la identidad del taller */}
         <aside className="login__marca">
           <div className="login__marca-top">
+            <span className="login__badge">Sistema interno</span>
             <img src={logo} alt="Bicho Malo Taller" className="login__logo" />
           </div>
 

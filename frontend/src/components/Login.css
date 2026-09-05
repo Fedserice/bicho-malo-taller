@@ -10,22 +10,24 @@
   min-height: 100vh;
   display: flex;
   align-items: stretch;
-  background: var(--bg);
+  background:
+    radial-gradient(circle at top left, rgba(212, 102, 31, 0.14), transparent 30%),
+    linear-gradient(135deg, #111310 0%, #1b1d1a 38%, #0f1110 100%);
   overflow: hidden;
 }
 
-/* Franja diagonal de fondo, como la pintura de piso de un box */
 .franja {
   position: absolute;
-  inset: -20% -10%;
+  inset: -24% -10% auto -18%;
+  height: 140%;
   background: repeating-linear-gradient(
     -18deg,
-    var(--accent-soft) 0px,
-    var(--accent-soft) 3px,
-    transparent 3px,
-    transparent 46px
+    rgba(244, 170, 110, 0.12) 0px,
+    rgba(244, 170, 110, 0.12) 2px,
+    transparent 2px,
+    transparent 48px
   );
-  opacity: 0.5;
+  opacity: 0.7;
   pointer-events: none;
 }
 
@@ -33,56 +35,88 @@
   position: relative;
   z-index: 1;
   display: grid;
-  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
   width: 100%;
-  max-width: 1040px;
+  max-width: 1100px;
   margin: 0 auto;
+  padding: 28px;
+  gap: 0;
 }
 
 @media (max-width: 860px) {
   .login__grid {
     grid-template-columns: 1fr;
+    padding: 18px;
   }
 }
-
-/* ------------------------------------------------------------
-   Panel de marca
-   ------------------------------------------------------------ */
 
 .login__marca {
   display: flex;
   flex-direction: column;
   justify-content: center;
   gap: 30px;
-  padding: 56px 48px;
-  background: var(--ink);
+  padding: 54px 48px 58px;
+  background: linear-gradient(180deg, rgba(16, 18, 17, 0.88), rgba(17, 19, 18, 0.98));
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-right: none;
+  box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.04);
   color: var(--ink-inv);
 }
 
 @media (max-width: 860px) {
   .login__marca {
-    padding: 44px 28px 32px;
+    padding: 36px 28px 24px;
+    border-right: 1px solid rgba(255, 255, 255, 0.06);
+    border-bottom: none;
   }
 }
 
 .login__marca-top {
-  align-self: flex-start;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.login__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 12px;
+  border: 1px solid rgba(255, 138, 61, 0.35);
+  border-radius: var(--r-pill);
+  background: rgba(255, 138, 61, 0.08);
+  color: #f4c39d;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 
 .login__logo {
   display: block;
-  width: min(100%, 300px);
-  height: auto;
+  width: min(100%, 290px);
+  max-height: 120px;
+  padding: 0;
+  background: transparent;
   object-fit: contain;
-  filter: drop-shadow(0 12px 22px rgba(0, 0, 0, 0.25));
+  filter: drop-shadow(0 18px 28px rgba(0, 0, 0, 0.35));
+}
+
+.login__marca-texto {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 
 .login__marca-texto h1 {
   display: flex;
   flex-direction: column;
   color: var(--ink-inv);
-  font-size: clamp(2.4rem, 1.6rem + 3vw, 3.4rem);
-  line-height: 0.94;
+  font-size: clamp(2.6rem, 2rem + 2.6vw, 4rem);
+  line-height: 0.86;
+  letter-spacing: -0.06em;
+  text-transform: none;
 }
 
 .login__marca-texto h1 span {
@@ -90,17 +124,16 @@
 }
 
 .login__marca-texto p {
-  margin-top: 14px;
   max-width: 34ch;
-  color: color-mix(in srgb, var(--ink-inv) 68%, transparent);
-  font-size: 0.98rem;
-  line-height: 1.5;
+  color: rgba(250, 250, 248, 0.72);
+  font-size: 1rem;
+  line-height: 1.6;
 }
 
 .login__lista {
   display: flex;
   flex-direction: column;
-  gap: 13px;
+  gap: 12px;
   list-style: none;
   padding: 0;
   margin: 0;
@@ -109,35 +142,41 @@
 .login__lista li {
   display: flex;
   align-items: center;
-  gap: 11px;
-  font-size: 0.92rem;
-  color: color-mix(in srgb, var(--ink-inv) 82%, transparent);
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  font-size: 0.96rem;
+  color: rgba(250, 250, 248, 0.8);
 }
 
 .login__lista .icon {
   flex: none;
   padding: 7px;
-  border-radius: var(--r);
-  background: color-mix(in srgb, var(--ink-inv) 10%, transparent);
+  border-radius: 9px;
+  background: rgba(255, 138, 61, 0.12);
   color: var(--accent-inv);
 }
-
-/* ------------------------------------------------------------
-   Panel de acceso
-   ------------------------------------------------------------ */
 
 .login__acceso {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 22px;
-  padding: 56px 40px;
+  gap: 20px;
+  padding: 52px 36px 40px;
+  background: rgba(18, 20, 18, 0.38);
+  backdrop-filter: blur(2px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-left: none;
 }
 
 @media (max-width: 860px) {
   .login__acceso {
-    padding: 36px 24px 48px;
+    padding: 24px 20px 32px;
+    border-left: 1px solid rgba(255, 255, 255, 0.06);
+    border-top: none;
   }
 }
 
@@ -146,12 +185,12 @@
   flex-direction: column;
   gap: 24px;
   width: 100%;
-  max-width: 360px;
-  padding: 30px 26px;
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--r-xl);
-  box-shadow: var(--shadow-2);
+  max-width: 390px;
+  padding: 30px 26px 24px;
+  background: rgba(250, 250, 248, 0.96);
+  border: 1px solid rgba(28, 29, 27, 0.08);
+  border-radius: 22px;
+  box-shadow: 0 22px 55px rgba(0, 0, 0, 0.24);
 }
 
 .login__caja-head {
@@ -165,20 +204,22 @@
   align-items: center;
   justify-content: center;
   flex: none;
-  width: 44px;
-  height: 44px;
-  border-radius: var(--r-lg);
-  background: var(--accent-soft);
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(212, 102, 31, 0.16), rgba(212, 102, 31, 0.05));
+  border: 1px solid rgba(212, 102, 31, 0.25);
   color: var(--accent-ink);
 }
 
 .login__caja-head h2 {
-  font-size: 1.3rem;
+  font-size: 1.38rem;
+  color: var(--ink);
 }
 
 .login__caja-head p {
-  margin-top: 2px;
-  font-size: 0.85rem;
+  margin-top: 3px;
+  font-size: 0.82rem;
   color: var(--ink-3);
 }
 
@@ -186,6 +227,40 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.campo label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.campo input {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #f5f5f2;
+  color: var(--ink);
+  transition: border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
+}
+
+.campo input::placeholder {
+  color: #8d8d83;
+}
+
+.campo input:focus {
+  outline: none;
+  border-color: rgba(212, 102, 31, 0.7);
+  box-shadow: 0 0 0 4px rgba(212, 102, 31, 0.12);
 }
 
 .login__clave {
@@ -196,12 +271,16 @@
 
 .login__clave input {
   width: 100%;
-  padding-right: 42px;
+  padding-right: 46px;
 }
 
 .login__ver {
   position: absolute;
-  right: 4px;
+  right: 8px;
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+  background: transparent;
   color: var(--ink-3);
 }
 
@@ -211,7 +290,7 @@
   gap: 8px;
   padding: 10px 12px;
   border: 1px solid var(--danger-line);
-  border-radius: var(--r);
+  border-radius: 12px;
   background: var(--danger-soft);
   color: var(--danger);
   font-size: 0.85rem;
@@ -223,10 +302,39 @@
   margin-top: 1px;
 }
 
+.btn--primary {
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-hover) 100%);
+  color: #fffaf5;
+  border: 1px solid rgba(122, 51, 8, 0.2);
+  box-shadow: 0 12px 18px rgba(212, 102, 31, 0.2);
+}
+
+.btn--primary:hover {
+  background: linear-gradient(135deg, #e27a35 0%, var(--accent) 100%);
+}
+
+.btn--lg {
+  min-height: 48px;
+  border-radius: 14px;
+}
+
 .login__pie {
   display: flex;
   align-items: center;
-  gap: 7px;
-  color: var(--ink-3);
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: var(--r-pill);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  color: rgba(250, 250, 248, 0.7);
   font-size: 0.8rem;
+}
+
+@media (max-width: 860px) {
+  .login__marca,
+  .login__acceso {
+    border-left: 1px solid rgba(255, 255, 255, 0.06);
+    border-right: 1px solid rgba(255, 255, 255, 0.06);
+  }
 }
