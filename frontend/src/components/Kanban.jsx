@@ -43,6 +43,10 @@ function Tarjeta({ ingreso, onSeleccionar, onEditar, onAvanzar, moviendo }) {
           <Icon name="persona" size={13} />
           {ingreso.cliente || "Sin cliente"}
         </p>
+        <p className="kanban__mecanico">
+          <Icon name="casco" size={13} />
+          {ingreso.mecanico || "Sin mecánico asignado"}
+        </p>
         {ingreso.motivo?.trim() && <p className="kanban__motivo">{ingreso.motivo}</p>}
       </button>
 
