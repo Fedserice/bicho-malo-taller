@@ -81,7 +81,7 @@ function Tarjeta({ ingreso, onSeleccionar, onEditar, onAvanzar, moviendo }) {
  * Tablero del taller. Vive dentro del Panel (`embebido`), pero se
  * mantiene como componente aparte porque trae y refresca sus datos.
  */
-function Kanban({ onSeleccionar, onEditar, onNuevoIngreso, embebido = false }) {
+function Kanban({ onSeleccionar, onEditar, embebido = false }) {
   const consulta = useCallback(() => listarEnTaller(), []);
   const { cargando, error, datos, recargar } = useConsultaConReload(consulta);
   const [moviendo, setMoviendo] = useState(null);
@@ -142,12 +142,6 @@ function Kanban({ onSeleccionar, onEditar, onNuevoIngreso, embebido = false }) {
           </span>
           <h3>No hay autos en el taller</h3>
           <p>Cuando registres un ingreso, el vehículo aparece acá en “En reparación”.</p>
-          {onNuevoIngreso && (
-            <button type="button" className="btn btn--primary" onClick={onNuevoIngreso}>
-              <Icon name="mas" size={18} />
-              Cargar un ingreso
-            </button>
-          )}
         </div>
       )}
 

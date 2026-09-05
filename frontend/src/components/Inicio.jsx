@@ -15,7 +15,7 @@ const pesos = new Intl.NumberFormat("es-AR", {
 
 const RESUMEN_VACIO = { enTaller: 0, cerrados: 0, facturado: 0 };
 
-function Inicio({ onHistorial, onReportes, onAbrirFicha, onEditar, onNuevoIngreso }) {
+function Inicio({ onHistorial, onReportes, onAbrirFicha, onEditar }) {
   const consulta = useCallback(() => obtenerResumen(), []);
   const { cargando, error, datos } = useConsulta(consulta, RESUMEN_VACIO);
 
@@ -86,21 +86,13 @@ function Inicio({ onHistorial, onReportes, onAbrirFicha, onEditar, onNuevoIngres
 
           <section className="inicio__cifras" aria-label="Resumen del taller">
             <div className="cifra">
-              <span className="cifra__label">En el taller</span>
-              <span className="cifra__valor num">{cifra(resumen.enTaller)}</span>
-              <span className="cifra__pie">
-                {resumen.enTaller === 1 ? "vehículo adentro" : "vehículos adentro"}
-              </span>
-            </div>
-
-            <div className="cifra">
-              <span className="cifra__label">Entregados</span>
+              <span className="cifra__label">Entregados este mes</span>
               <span className="cifra__valor num">{cifra(resumen.cerrados)}</span>
               <span className="cifra__pie">en el historial</span>
             </div>
 
             <div className="cifra">
-              <span className="cifra__label">Total cobrado</span>
+              <span className="cifra__label">Total cobrado este mes</span>
               <span className="cifra__valor cifra__valor--monto num cifra__valor--con-ojo">
                 {cargando ? "—" : verTotal ? pesos.format(resumen.facturado) : "••••••"}
                 <button
@@ -138,7 +130,6 @@ function Inicio({ onHistorial, onReportes, onAbrirFicha, onEditar, onNuevoIngres
               embebido
               onSeleccionar={onAbrirFicha}
               onEditar={onEditar}
-              onNuevoIngreso={onNuevoIngreso}
             />
           </section>
 

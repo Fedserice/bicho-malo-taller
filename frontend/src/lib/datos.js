@@ -10,10 +10,13 @@ import { supabase } from "./supabase";
 
 const ESTADOS = ["En reparación", "Finalizado", "Entregado"];
 
-// Mecánicos con reparto especial de facturación (ver obtenerReportes).
-// Román y Juan facturan el 30% de su propia mano de obra; el 70%
-// restante de cada uno se suma a Gonzalo, además del 100% de lo suyo.
-const NOMBRE_GONZALO = "Gonzalo"; // ajustar si en la base figura distinto (mayúsculas/acento)
+// Reparto de la mano de obra. Los nombres visibles se mantienen
+// canónicos aunque en datos viejos aparezcan sin acento o abreviados.
+const NOMBRES_MECANICOS = {
+  roman: "Román Federice",
+  juan: "Juan Mecánico",
+  gonzalo: "Gonzalo Federice",
+};
 
 function numero(valor) {
   if (valor === "" || valor === null || valor === undefined) return null;
@@ -482,6 +485,7 @@ export async function listarMecanicos() {
     .from("mecanicos")
     .select("id, nombre")
     .eq("activo", true)
+    .in("nombre", Object.values(NOMBRES_MECANICOS))
     .order("nombre");
 
   reventar(error);
@@ -557,22 +561,21 @@ export async function obtenerSaldosPendientes() {
 }
 
 /**
- * Reparto de facturación por mecánico:
- * - Román y Juan facturan el 30% de su propia mano de obra.
- * - Gonzalo factura el 70% restante de Román, el 70% restante de
- *   Juan, más el 100% de lo que hizo él mismo.
- * - Cualquier otro mecánico factura el 100% de su mano de obra
- *   (no hay regla especial definida para ellos).
+ * Calcula dos lecturas del reparto:
+ * - `porMecanico`: lo que cobra cada mecánico por sus propios trabajos.
+ * - `ingresosTotalMecanicos`: lo que queda para el conjunto del taller:
+ *   100% de Gonzalo + 70% de Román + 70% de Juan.
  * La base de cálculo es `mano_obra`, no `total_cobrado`.
  */
 function calcularFacturacionPorMecanico(visitas) {
   const porMecanico = new Map();
+  const ingresosTotalMecanicos = new Map();
 
-  function sumar(nombre, monto, cuentaComoTrabajo) {
-    const actual = porMecanico.get(nombre) ?? { nombre, trabajos: 0, facturado: 0 };
+  function sumar(mapa, nombre, monto, cuentaComoTrabajo) {
+    const actual = mapa.get(nombre) ?? { nombre, trabajos: 0, facturado: 0 };
     actual.facturado += monto;
     if (cuentaComoTrabajo) actual.trabajos += 1;
-    porMecanico.set(nombre, actual);
+    mapa.set(nombre, actual);
   }
 
   for (const v of visitas) {
@@ -580,17 +583,41 @@ function calcularFacturacionPorMecanico(visitas) {
     const clave = normalizarNombre(nombreOriginal);
     const manoObra = Number(v.mano_obra) || 0;
 
-    if (clave === "roman" || clave === "juan") {
-      sumar(nombreOriginal, manoObra * 0.3, true);
-      sumar(NOMBRE_GONZALO, manoObra * 0.7, false);
-    } else if (clave === "gonzalo") {
-      sumar(NOMBRE_GONZALO, manoObra, true);
+    if (clave.includes("roman") || clave.includes("román")) {
+      sumar(porMecanico, NOMBRES_MECANICOS.roman, manoObra * 0.3, true);
+      sumar(ingresosTotalMecanicos, NOMBRES_MECANICOS.roman, manoObra * 0.7, true);
+    } else if (clave.includes("juan")) {
+      sumar(porMecanico, NOMBRES_MECANICOS.juan, manoObra * 0.3, true);
+      sumar(ingresosTotalMecanicos, NOMBRES_MECANICOS.juan, manoObra * 0.7, true);
+    } else if (clave.includes("gonzalo")) {
+      sumar(porMecanico, NOMBRES_MECANICOS.gonzalo, manoObra, true);
+      sumar(ingresosTotalMecanicos, NOMBRES_MECANICOS.gonzalo, manoObra, true);
     } else {
-      sumar(nombreOriginal, manoObra, true);
+      sumar(porMecanico, nombreOriginal, manoObra, true);
     }
   }
 
-  return [...porMecanico.values()].sort((a, b) => b.facturado - a.facturado);
+  return {
+    porMecanico: [...porMecanico.values()]
+      .map((mecanico) => ({
+        ...mecanico,
+        porcentaje:
+          normalizarNombre(mecanico.nombre).includes("roman") ||
+          normalizarNombre(mecanico.nombre).includes("juan")
+            ? 30
+            : 100,
+      }))
+      .sort((a, b) => b.facturado - a.facturado),
+    ingresosTotalMecanicos: [...ingresosTotalMecanicos.values()]
+      .map((mecanico) => ({
+        ...mecanico,
+        porcentaje: normalizarNombre(mecanico.nombre).includes("roman") ||
+          normalizarNombre(mecanico.nombre).includes("juan")
+          ? 70
+          : 100,
+      }))
+      .sort((a, b) => b.facturado - a.facturado),
+  };
 }
 
 /**
@@ -628,7 +655,11 @@ export async function obtenerReportes() {
       total: porMes.get(clave) ?? 0,
     }));
 
-  const porMecanico = calcularFacturacionPorMecanico(visitas);
+  const { porMecanico, ingresosTotalMecanicos } = calcularFacturacionPorMecanico(visitas);
+  const totalIngresosMecanicos = ingresosTotalMecanicos.reduce(
+    (acc, mecanico) => acc + mecanico.facturado,
+    0
+  );
 
   const totalFacturado = visitas.reduce((acc, v) => acc + (Number(v.total_cobrado) || 0), 0);
   const totalManoObra = visitas.reduce((acc, v) => acc + (Number(v.mano_obra) || 0), 0);
@@ -639,6 +670,8 @@ export async function obtenerReportes() {
     trabajosEntregados: visitas.length,
     facturacionMensual,
     porMecanico,
+    ingresosTotalMecanicos,
+    totalIngresosMecanicos,
     saldos,
   };
 }

@@ -24,7 +24,7 @@
 
 .inicio__cifras {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 12px;
 }
 
@@ -78,12 +78,7 @@
 
 @media (max-width: 720px) {
   .inicio__cifras {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  /* El monto se lleva el ancho completo: es el número más largo */
-  .inicio__cifras > *:nth-child(3) {
-    grid-column: span 2;
+    grid-template-columns: 1fr;
   }
 
   .cifra__valor {

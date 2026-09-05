@@ -267,6 +267,20 @@ const saldo = manoObraNum - totalCobradoNum; // positivo = falta cobrar
                 onChange={cambiarDato}
               />
             </div>
+
+            <div className={`${claseCampo("observaciones")} ancho-2`}>
+              <label htmlFor="observaciones">
+                Observaciones
+              </label>
+              <textarea
+                id="observaciones"
+                name="observaciones"
+                rows="2"
+                placeholder="Notas para el próximo ingreso"
+                value={datos.observaciones}
+                onChange={cambiarDato}
+              />
+            </div>
           </div>
         </section>
 
@@ -407,19 +421,6 @@ const saldo = manoObraNum - totalCobradoNum; // positivo = falta cobrar
               />
             </div>
 
-            <div className={`${claseCampo("observaciones")} ancho-2`}>
-              <label htmlFor="observaciones">
-                Observaciones
-              </label>
-              <textarea
-                id="observaciones"
-                name="observaciones"
-                rows="2"
-                placeholder="Notas para el próximo ingreso"
-                value={datos.observaciones}
-                onChange={cambiarDato}
-              />
-            </div>
           </div>
         </section>
 

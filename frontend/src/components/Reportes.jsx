@@ -174,9 +174,21 @@ function Reportes() {
   if (error) return <ErrorDatos mensaje={error} />;
   if (!datos) return null;
 
-  const { totalFacturado, trabajosEntregados, facturacionMensual, porMecanico, saldos } = datos;
+  const {
+    totalFacturado,
+    trabajosEntregados,
+    facturacionMensual,
+    porMecanico,
+    ingresosTotalMecanicos,
+    totalIngresosMecanicos,
+    saldos,
+  } = datos;
   const maximoMensual = Math.max(1, ...facturacionMensual.map((m) => m.total));
   const maximoMecanico = Math.max(1, ...porMecanico.map((m) => m.facturado));
+  const maximoIngresoMecanico = Math.max(
+    1,
+    ...ingresosTotalMecanicos.map((m) => m.facturado)
+  );
 
   return (
     <div className="reportes">
@@ -313,6 +325,10 @@ function Reportes() {
           Por mecánico
         </h2>
 
+        <p className="reportes__nota-reparto">
+          Lo que cobra cada uno por la mano de obra de sus trabajos.
+        </p>
+
         {porMecanico.length === 0 ? (
           <p className="reportes__vacio">Todavía no hay trabajos entregados para repartir.</p>
         ) : (
@@ -327,7 +343,42 @@ function Reportes() {
                   />
                 </div>
                 <span className="reportes__barra-num num">
-                  {pesos.format(m.facturado)} · {m.trabajos} {m.trabajos === 1 ? "trabajo" : "trabajos"}
+                  {m.porcentaje}% · {pesos.format(m.facturado)} · {m.trabajos} {m.trabajos === 1 ? "trabajo" : "trabajos"}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+
+      <section className="bloque bloque--ancho reportes__bloque reportes__bloque--total-mecanicos">
+        <div className="reportes__total-head">
+          <div>
+            <h2 className="bloque__titulo">
+              <Icon name="peso" size={17} />
+              Ingresos netos taller
+            </h2>
+          </div>
+          <strong className="reportes__total-valor num">
+            {pesos.format(totalIngresosMecanicos)}
+          </strong>
+        </div>
+
+        {ingresosTotalMecanicos.length === 0 ? (
+          <p className="reportes__vacio">Todavía no hay ingresos para repartir.</p>
+        ) : (
+          <div className="reportes__barras">
+            {ingresosTotalMecanicos.map((m) => (
+              <div className="reportes__barra-fila" key={m.nombre}>
+                <span className="reportes__barra-label">{m.nombre}</span>
+                <div className="reportes__barra-pista">
+                  <div
+                    className="reportes__barra-valor"
+                    style={{ width: `${(m.facturado / maximoIngresoMecanico) * 100}%` }}
+                  />
+                </div>
+                <span className="reportes__barra-num num">
+                  {m.porcentaje}% · {pesos.format(m.facturado)} · {m.trabajos} {m.trabajos === 1 ? "trabajo" : "trabajos"}
                 </span>
               </div>
             ))}

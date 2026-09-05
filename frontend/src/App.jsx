@@ -218,7 +218,6 @@ function App() {
             onReportes={() => ir("reportes")}
             onAbrirFicha={abrirFicha}
             onEditar={editarTrabajo}
-            onNuevoIngreso={irANuevoIngreso}
           />
         )}
 

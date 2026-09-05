@@ -17,6 +17,30 @@
   font-size: 0.9rem;
 }
 
+.reportes__nota-reparto {
+  margin-top: -8px;
+  color: var(--ink-3);
+  font-size: 0.85rem;
+}
+
+.reportes__total-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.reportes__total-valor {
+  color: var(--accent-ink);
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  white-space: nowrap;
+}
+
+.reportes__bloque--total-mecanicos {
+  border-left: 4px solid var(--accent);
+}
+
 .reportes__barras {
   display: flex;
   flex-direction: column;
@@ -64,6 +88,11 @@
 }
 
 @media (max-width: 560px) {
+  .reportes__total-head {
+    flex-direction: column;
+    gap: 8px;
+  }
+
   .reportes__barra-fila {
     grid-template-columns: 1fr;
     gap: 4px;
