@@ -1,0 +1,333 @@
+/* ============================================================
+   Login — portón de entrada al taller
+
+   Dos paneles: a la izquierda la chapa patente hace de marca
+   (ya existe como componente, se reusa en grande); a la derecha
+   el formulario, como si fuera la ventanilla de recepción.
+   ============================================================ */
+.login {
+  position: relative;
+  z-index: 0;
+  min-height: 100vh;
+  display: flex;
+  align-items: stretch;
+  background: transparent;
+  overflow: hidden;
+}
+
+.franja {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 9px;
+  height: auto;
+  background: #5227ff;
+  opacity: 1;
+  pointer-events: none;
+}
+
+.login__grid {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(360px, 0.75fr);
+  width: 100%;
+  max-width: 1180px;
+  margin: 0 auto;
+  min-height: 100vh;
+  padding: 48px 64px;
+  gap: 72px;
+}
+
+@media (max-width: 860px) {
+  .login__grid {
+    grid-template-columns: 1fr;
+    padding: 18px;
+  }
+}
+
+.login__marca {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 38px;
+  padding: 20px 0;
+  background: transparent;
+  border: 0;
+  border-right: 0;
+  box-shadow: none;
+  color: var(--ink-inv);
+}
+
+@media (max-width: 860px) {
+  .login__marca {
+    padding: 36px 28px 24px;
+    border-right: 1px solid rgba(255, 255, 255, 0.06);
+    border-bottom: none;
+  }
+}
+
+.login__marca-top {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.login__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  border: 0;
+  border-bottom: 1px solid rgba(196, 181, 253, 0.7);
+  border-radius: 0;
+  background: transparent;
+  color: #ddd6fe;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.login__logo {
+  display: block;
+  width: min(100%, 360px);
+  max-height: 120px;
+  padding: 0;
+  object-fit: contain;
+  filter: none;
+  mix-blend-mode: multiply;
+}
+
+.login__marca-texto {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.login__marca-texto h1 {
+  display: flex;
+  flex-direction: column;
+  color: #ffffff;
+  font-size: clamp(3rem, 2rem + 4vw, 5.8rem);
+  line-height: 0.86;
+  letter-spacing: -0.08em;
+  text-transform: none;
+}
+
+.login__marca-texto h1 span {
+  color: #c4b5fd;
+}
+
+.login__marca-texto p {
+  max-width: 34ch;
+  color: rgba(250, 250, 248, 0.72);
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.login__lista {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.login__lista li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-radius: 0;
+  background: transparent;
+  border: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.16);
+  font-size: 0.96rem;
+  color: rgba(250, 250, 248, 0.8);
+}
+
+.login__lista .icon {
+  flex: none;
+  color: #c4b5fd;
+}
+
+.login__acceso {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 26px;
+  padding: 20px 0;
+  background: transparent;
+  border: 0;
+  border-left: 0;
+}
+
+@media (max-width: 860px) {
+  .login__acceso {
+    padding: 24px 20px 32px;
+    border-left: 1px solid rgba(255, 255, 255, 0.06);
+    border-top: none;
+  }
+}
+
+.login__caja {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  width: 100%;
+  max-width: 390px;
+  padding: 34px 32px 30px;
+  background: var(--surface);
+  border: 0;
+  border-radius: var(--r);
+  box-shadow: 10px 10px 0 #5227ff;
+}
+
+.login__caja-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.login__escudo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: #5227ff;
+  border: 0;
+  color: var(--on-accent);
+}
+
+.login__caja-head h2 {
+  font-size: 1.38rem;
+  color: var(--ink);
+}
+
+.login__caja-head p {
+  margin-top: 3px;
+  font-size: 0.82rem;
+  color: var(--ink-3);
+}
+
+.login__form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.campo label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.campo input {
+  width: 100%;
+  padding: 13px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--surface-2);
+  color: var(--ink);
+  transition: border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
+}
+
+.campo input::placeholder {
+  color: #8d8d83;
+}
+
+.campo input:focus {
+  outline: none;
+  border-color: #7c3aed;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.24);
+}
+
+.login__clave {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.login__clave input {
+  width: 100%;
+  padding-right: 46px;
+}
+
+.login__ver {
+  position: absolute;
+  right: 8px;
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--ink-3);
+}
+
+.login__error {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--danger-line);
+  border-radius: 12px;
+  background: var(--danger-soft);
+  color: var(--danger);
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.login__error .icon {
+  flex: none;
+  margin-top: 1px;
+}
+
+.btn--primary {
+  background: #5227ff;
+  color: #ffffff;
+  border: 1px solid #5227ff;
+  box-shadow: none;
+}
+
+.btn--primary:hover {
+  background: #6d3cff;
+}
+
+.btn--lg {
+  min-height: 48px;
+  border-radius: 14px;
+}
+
+.login__pie {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 0;
+  border-radius: 0;
+  background: transparent;
+  border: 0;
+  color: rgba(250, 250, 248, 0.7);
+  font-size: 0.8rem;
+}
+
+@media (max-width: 860px) {
+  .login__marca,
+  .login__acceso {
+    border-left: 1px solid rgba(255, 255, 255, 0.06);
+    border-right: 1px solid rgba(255, 255, 255, 0.06);
+  }
+}

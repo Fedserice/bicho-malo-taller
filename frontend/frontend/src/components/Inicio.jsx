@@ -46,13 +46,13 @@ function Inicio({ onAbrirFicha, onEditar }) {
         <h1>Panel del taller</h1>
       </header>
 
-      {/* Buscador: patente, cliente, vehículo o trabajo realizado */}
+      {/* Buscador: patente, cliente, vehículo, trabajo u observaciones */}
       <div className="buscador">
         <Icon name="buscar" size={20} className="buscador__lupa" />
         <input
           type="search"
           className="buscador__input"
-          placeholder="Buscar por patente, cliente, vehículo o trabajo…"
+          placeholder="Buscar por patente, cliente, vehículo, trabajo u observaciones…"
           value={texto}
           onChange={(e) => setTexto(e.target.value)}
           autoCapitalize="none"

@@ -116,6 +116,7 @@ function desdeFilaResumen(fila) {
     estado: texto(fila.estado),
     motivo: texto(fila.motivo),
     trabajos: texto(fila.trabajos),
+    observaciones: texto(fila.observaciones),
     mecanico: texto(fila.mecanico),
     manoObra: fila.mano_obra ?? "",
     totalTrabajo: fila.total_trabajo ?? "",
