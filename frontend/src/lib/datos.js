@@ -508,6 +508,14 @@ function nombreMes(clave) {
   return t.charAt(0).toUpperCase() + t.slice(1).replace(".", "");
 }
 
+function mesesDelAnio(anio) {
+  return Array.from({ length: 12 }, (_, indice) => {
+    const mes = String(indice + 1).padStart(2, "0");
+    const clave = `${anio}-${mes}`;
+    return { clave, mes: nombreMes(clave), total: 0 };
+  });
+}
+
 /**
  * Trabajos con plata sin cobrar. `saldo` ya viene calculado por la
  * base como (mano_obra - total_cobrado): positivo = falta cobrar.
@@ -620,6 +628,48 @@ function calcularFacturacionPorMecanico(visitas) {
   };
 }
 
+function calcularGraficosAnuales(visitas, anio) {
+  const facturacionAnual = mesesDelAnio(anio);
+  const porMes = new Map(facturacionAnual.map((mes) => [mes.clave, mes]));
+  const mecanicos = new Map();
+
+  for (const visita of visitas) {
+    const claveMesVisita = claveMes(visita.fecha);
+    if (!claveMesVisita || !claveMesVisita.startsWith(`${anio}-`)) continue;
+
+    const mes = porMes.get(claveMesVisita);
+    if (mes) mes.total += Number(visita.total_cobrado) || 0;
+
+    const nombreOriginal = texto(visita.mecanico).trim() || "Sin asignar";
+    const claveMecanico = normalizarNombre(nombreOriginal);
+    const esRoman = claveMecanico.includes("roman");
+    const esJuan = claveMecanico.includes("juan");
+    const nombre = esRoman
+      ? NOMBRES_MECANICOS.roman
+      : esJuan
+        ? NOMBRES_MECANICOS.juan
+        : claveMecanico.includes("gonzalo")
+          ? NOMBRES_MECANICOS.gonzalo
+          : nombreOriginal;
+    const porcentaje = esRoman || esJuan ? 0.3 : 1;
+    const registro = mecanicos.get(nombre) ?? {
+      nombre,
+      porcentaje: porcentaje * 100,
+      meses: mesesDelAnio(anio),
+    };
+    const mesMecanico = registro.meses.find((item) => item.clave === claveMesVisita);
+    if (mesMecanico) mesMecanico.total += (Number(visita.mano_obra) || 0) * porcentaje;
+    mecanicos.set(nombre, registro);
+  }
+
+  return {
+    facturacionAnual,
+    facturacionAnualPorMecanico: [...mecanicos.values()].sort((a, b) =>
+      a.nombre.localeCompare(b.nombre, "es")
+    ),
+  };
+}
+
 /**
  * Datos completos de Reportes: facturación mensual (todos los meses
  * con datos, no solo los últimos), reparto por mecánico y saldos
@@ -656,6 +706,11 @@ export async function obtenerReportes() {
     }));
 
   const { porMecanico, ingresosTotalMecanicos } = calcularFacturacionPorMecanico(visitas);
+  const anioGrafico = new Date().getFullYear();
+  const { facturacionAnual, facturacionAnualPorMecanico } = calcularGraficosAnuales(
+    visitas,
+    anioGrafico
+  );
   const totalIngresosMecanicos = ingresosTotalMecanicos.reduce(
     (acc, mecanico) => acc + mecanico.facturado,
     0
@@ -669,6 +724,9 @@ export async function obtenerReportes() {
     totalManoObra,
     trabajosEntregados: visitas.length,
     facturacionMensual,
+    anioGrafico,
+    facturacionAnual,
+    facturacionAnualPorMecanico,
     porMecanico,
     ingresosTotalMecanicos,
     totalIngresosMecanicos,

@@ -214,8 +214,6 @@ function App() {
       <main className="app__contenido" key={pantalla}>
         {pantalla === "inicio" && (
           <Inicio
-            onHistorial={() => ir("historial")}
-            onReportes={() => ir("reportes")}
             onAbrirFicha={abrirFicha}
             onEditar={editarTrabajo}
           />
@@ -239,7 +237,17 @@ function App() {
         {pantalla === "reportes" && <Reportes />}
       </main>
 
-      {pantalla !== "nuevo" && <BotonFlotante onClick={irANuevoIngreso} />}
+      {pantalla !== "nuevo" && (
+        <nav className="navegacion-flotante" aria-label="Accesos rápidos">
+          <BotonFlotante
+            tipo="historial"
+            etiqueta="Abrir historial"
+            onClick={() => ir("historial")}
+          />
+          <BotonFlotante tipo="nuevo" etiqueta="Nuevo ingreso" onClick={irANuevoIngreso} />
+          <BotonFlotante tipo="reportes" etiqueta="Abrir reportes" onClick={() => ir("reportes")} />
+        </nav>
+      )}
     </div>
   );
 }

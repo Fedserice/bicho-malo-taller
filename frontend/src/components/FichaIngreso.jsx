@@ -1,5 +1,6 @@
 import { useCallback } from "react";
 import Icon from "../ui/Icon";
+import NumeroAnimado from "../ui/NumeroAnimado";
 import Patente from "../ui/Patente";
 import EstadoChip from "../ui/EstadoChip";
 import { Cargando, ErrorDatos } from "../ui/Estados";
@@ -65,21 +66,21 @@ function Visita({ visita, esUltima }) {
             <Icon name="llave" size={15} />
             Mano de obra
           </span>
-          <span className="num">{pesos.format(manoObra)}</span>
+          <span className="num"><NumeroAnimado valor={manoObra} formato={(valor) => pesos.format(valor)} /></span>
         </div>
         <div className="cuenta__fila">
           <span>
             <Icon name="peso" size={15} />
             Total del trabajo
           </span>
-          <span className="num">{pesos.format(totalTrabajo)}</span>
+          <span className="num"><NumeroAnimado valor={totalTrabajo} formato={(valor) => pesos.format(valor)} /></span>
         </div>
         <div className="cuenta__fila">
           <span>
             <Icon name="tilde" size={15} />
             Cobrado
           </span>
-          <span className="num">{pesos.format(cobrado)}</span>
+          <span className="num"><NumeroAnimado valor={cobrado} formato={(valor) => pesos.format(valor)} /></span>
         </div>
       </div>
 
@@ -87,7 +88,9 @@ function Visita({ visita, esUltima }) {
         <span className="cuenta__total-label">
           {saldo > 0 ? "Saldo pendiente" : "Saldado"}
         </span>
-        <span className="cuenta__total-valor num">{pesos.format(Math.max(saldo, 0))}</span>
+        <span className="cuenta__total-valor num">
+          <NumeroAnimado valor={Math.max(saldo, 0)} formato={(valor) => pesos.format(valor)} />
+        </span>
       </div>
 
       {(visita.pendientes?.trim() || visita.observaciones?.trim()) && (

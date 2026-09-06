@@ -6,18 +6,18 @@
 :root {
   /* --- Superficies y líneas: piso de concreto del box, gris neutro
      (el óxido queda para el acento, no para bañar toda la pantalla) --- */
-  --bg: #e9e6df;
-  --surface: #f7f5ef;
-  --surface-2: #efede6;
-  --surface-3: #dedbd2;
-  --line: #d0ccc1;
-  --line-strong: #aaa59a;
+  --bg: #0f0d14;
+  --surface: #17151e;
+  --surface-2: #201d29;
+  --surface-3: #2b2737;
+  --line: #393443;
+  --line-strong: #514b5f;
 
   /* --- Tinta: grafito neutro --- */
-  --ink: #171817;
-  --ink-2: #3f403c;
-  --ink-3: #777770;
-  --ink-inv: #f7f5ef;
+  --ink: #f7f5ff;
+  --ink-2: #d2cedd;
+  --ink-3: #9791a5;
+  --ink-inv: #0f0d14;
 
   /* --- Acento: óxido quemado, como el fierro viejo del taller ---
      `--on-accent` va oscuro encima: el óxido es demasiado medio-tono
@@ -97,53 +97,6 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #16171f;
-    --surface: #1e1f1c;
-    --surface-2: #24251f;
-    --surface-3: #2e2f27;
-    --line: #383930;
-    --line-strong: #4c4d40;
-
-    --ink: #eeefe9;
-    --ink-2: #c4c5b9;
-    --ink-3: #8f9084;
-    --ink-inv: #1e1f1c;
-
-    --accent: #ff8a3d;
-    --accent-hover: #ffa564;
-    --accent-soft: rgba(255, 138, 61, 0.14);
-    --accent-line: rgba(255, 138, 61, 0.36);
-    --accent-ring: rgba(255, 138, 61, 0.3);
-    --accent-ink: #ffb87c;
-    /* En oscuro los paneles invertidos son claros: el óxido se hunde */
-    --accent-inv: #a83f0a;
-
-    --ok: #6bc276;
-    --ok-soft: rgba(107, 194, 118, 0.14);
-    --ok-line: rgba(107, 194, 118, 0.32);
-    --info: #7fa8d6;
-    --info-soft: rgba(127, 168, 214, 0.14);
-    --info-line: rgba(127, 168, 214, 0.32);
-    --neutral: #b3a88f;
-    --neutral-soft: rgba(179, 168, 143, 0.12);
-    --neutral-line: rgba(179, 168, 143, 0.28);
-    --danger: #e0665a;
-    --danger-hover: #ea8478;
-    --danger-soft: rgba(224, 102, 90, 0.14);
-    --danger-line: rgba(224, 102, 90, 0.32);
-
-    --plate-blue: #3d63d6;
-
-    --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
-    --shadow-2: 0 6px 16px -4px rgba(0, 0, 0, 0.5), 0 2px 6px -2px rgba(0, 0, 0, 0.4);
-    --shadow-3: 4px 4px 0 0 rgba(0, 0, 0, 0.6);
-
-    color-scheme: dark;
-  }
-}
-
 /* ------------------------------------------------------------
    Reset
    ------------------------------------------------------------ */
@@ -162,8 +115,6 @@ body {
   margin: 0;
   min-height: 100svh;
   background-color: var(--bg);
-  background-image: linear-gradient(rgba(23, 24, 23, 0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(23, 24, 23, 0.025) 1px, transparent 1px);
-  background-size: 24px 24px;
   color: var(--ink-2);
 }
 

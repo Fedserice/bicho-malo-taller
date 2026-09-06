@@ -1,5 +1,6 @@
 import { useCallback, useState } from "react";
 import Icon from "../ui/Icon";
+import NumeroAnimado from "../ui/NumeroAnimado";
 import Patente from "../ui/Patente";
 import EstadoChip from "../ui/EstadoChip";
 import { Cargando, ErrorDatos } from "../ui/Estados";
@@ -13,6 +14,84 @@ const pesos = new Intl.NumberFormat("es-AR", {
   currency: "ARS",
   maximumFractionDigits: 0,
 });
+
+const pesosCompactos = new Intl.NumberFormat("es-AR", {
+  style: "currency",
+  currency: "ARS",
+  notation: "compact",
+  maximumFractionDigits: 0,
+});
+
+function AlternarVista({ vista, onChange }) {
+  return (
+    <div className="reportes__vista" role="group" aria-label="Cambiar vista">
+      <button
+        type="button"
+        className={`reportes__vista-boton ${vista === "lista" ? "reportes__vista-boton--activo" : ""}`}
+        onClick={() => onChange("lista")}
+        aria-pressed={vista === "lista"}
+      >
+        <Icon name="planilla" size={15} />
+        Lista
+      </button>
+      <button
+        type="button"
+        className={`reportes__vista-boton ${vista === "grafico" ? "reportes__vista-boton--activo" : ""}`}
+        onClick={() => onChange("grafico")}
+        aria-pressed={vista === "grafico"}
+      >
+        <Icon name="grafico" size={15} />
+        Gráfico
+      </button>
+    </div>
+  );
+}
+
+function GraficoAnual({ series, ariaLabel, compacto = false }) {
+  const maximo = Math.max(0, ...series.map((mes) => mes.total));
+
+  if (maximo === 0) {
+    return (
+      <div className={`reportes__grafico reportes__grafico--vacio ${compacto ? "reportes__grafico--compacto" : ""}`}>
+        <span>Sin facturación en {series[0]?.clave.slice(0, 4)}</span>
+      </div>
+    );
+  }
+
+  const escala = [maximo, maximo * 0.75, maximo * 0.5, maximo * 0.25, 0];
+
+  return (
+    <div
+      className={`reportes__grafico ${compacto ? "reportes__grafico--compacto" : ""}`}
+      role="img"
+      aria-label={ariaLabel}
+    >
+      <div className="reportes__eje-y" aria-hidden="true">
+        {escala.map((valor, indice) => (
+          <span key={indice}>{pesosCompactos.format(valor)}</span>
+        ))}
+      </div>
+      <div className="reportes__grafico-area">
+        <div className="reportes__lineas" aria-hidden="true">
+          {escala.map((_, indice) => <span key={indice} />)}
+        </div>
+        <div className="reportes__barras-anuales">
+          {series.map((mes) => {
+            const altura = mes.total > 0 ? Math.max((mes.total / maximo) * 100, 4) : 0;
+            return (
+              <div className="reportes__mes-barra" key={mes.clave} title={`${mes.mes}: ${pesos.format(mes.total)}`}>
+                <div className="reportes__barra-columna">
+                  <span className="reportes__barra-relleno" style={{ height: `${altura}%` }} />
+                </div>
+                <span className="reportes__mes-etiqueta">{mes.mes.slice(0, 3)}</span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 /** Registra un pago sobre una visita: suma el monto ingresado al total cobrado. */
 function RegistrarPago({ visitaId, manoObra, cobradoActual, onGuardado }) {
@@ -169,6 +248,8 @@ function MesAcordeon({ mes }) {
 function Reportes() {
   const consulta = useCallback(() => obtenerReportes(), []);
   const { cargando, error, datos, recargar } = useConsulta(consulta, null);
+  const [vistaMensual, setVistaMensual] = useState("lista");
+  const [vistaMecanicos, setVistaMecanicos] = useState("lista");
 
   if (cargando) return <Cargando texto="Calculando los números del taller…" />;
   if (error) return <ErrorDatos mensaje={error} />;
@@ -178,6 +259,9 @@ function Reportes() {
     totalFacturado,
     trabajosEntregados,
     facturacionMensual,
+    anioGrafico,
+    facturacionAnual,
+    facturacionAnualPorMecanico,
     porMecanico,
     ingresosTotalMecanicos,
     totalIngresosMecanicos,
@@ -202,19 +286,21 @@ function Reportes() {
       <section className="inicio__cifras" aria-label="Resumen de facturación">
         <div className="cifra">
           <span className="cifra__label">Total facturado</span>
-          <span className="cifra__valor cifra__valor--monto num">{pesos.format(totalFacturado)}</span>
+          <span className="cifra__valor cifra__valor--monto num">
+            <NumeroAnimado valor={totalFacturado} formato={(valor) => pesos.format(valor)} />
+          </span>
           <span className="cifra__pie">histórico, trabajos entregados</span>
         </div>
         <div className="cifra">
           <span className="cifra__label">Trabajos entregados</span>
-          <span className="cifra__valor num">{trabajosEntregados}</span>
+          <span className="cifra__valor num"><NumeroAnimado valor={trabajosEntregados} /></span>
           <span className="cifra__pie">en total</span>
         </div>
 
         <div className={`cifra ${saldos.totalSaldos > 0 ? "cifra--deuda" : ""}`.trim()}>
           <span className="cifra__label">Saldos pendientes</span>
           <span className="cifra__valor cifra__valor--monto num">
-            {pesos.format(saldos.totalSaldos)}
+            <NumeroAnimado valor={saldos.totalSaldos} formato={(valor) => pesos.format(valor)} />
           </span>
           <span className="cifra__pie">
             {saldos.deudores.length === 1
@@ -302,12 +388,20 @@ function Reportes() {
 
       {/* FACTURACIÓN MES A MES — cada mes se abre y muestra su detalle */}
       <section className="bloque bloque--ancho reportes__bloque">
-        <h2 className="bloque__titulo">
-          <Icon name="grafico" size={17} />
-          Facturación por mes
-        </h2>
+        <div className="reportes__seccion-head">
+          <h2 className="bloque__titulo">
+            <Icon name="grafico" size={17} />
+            Facturación por mes
+          </h2>
+          <AlternarVista vista={vistaMensual} onChange={setVistaMensual} />
+        </div>
 
-        {facturacionMensual.length === 0 ? (
+        {vistaMensual === "grafico" ? (
+          <GraficoAnual
+            series={facturacionAnual}
+            ariaLabel={`Facturación mensual del año ${anioGrafico}`}
+          />
+        ) : facturacionMensual.length === 0 ? (
           <p className="reportes__vacio">Todavía no hay trabajos entregados para mostrar.</p>
         ) : (
           <div className="reportes__meses">
@@ -319,16 +413,40 @@ function Reportes() {
       </section>
 
       <section className="bloque bloque--ancho reportes__bloque">
-        <h2 className="bloque__titulo">
-          <Icon name="casco" size={17} />
-          Por mecánico
-        </h2>
+        <div className="reportes__seccion-head">
+          <div>
+            <h2 className="bloque__titulo">
+              <Icon name="casco" size={17} />
+              Por mecánico
+            </h2>
+            <p className="reportes__nota-reparto">
+              Lo que cobra cada uno por la mano de obra de sus trabajos.
+            </p>
+          </div>
+          <AlternarVista vista={vistaMecanicos} onChange={setVistaMecanicos} />
+        </div>
 
-        <p className="reportes__nota-reparto">
-          Lo que cobra cada uno por la mano de obra de sus trabajos.
-        </p>
-
-        {porMecanico.length === 0 ? (
+        {vistaMecanicos === "grafico" ? (
+          facturacionAnualPorMecanico.length === 0 ? (
+            <p className="reportes__vacio">Todavía no hay trabajos entregados para repartir.</p>
+          ) : (
+            <div className="reportes__graficos-mecanicos">
+              {facturacionAnualPorMecanico.map((mecanico) => (
+                <article className="reportes__grafico-mecanico" key={mecanico.nombre}>
+                  <div className="reportes__grafico-mecanico-head">
+                    <h3>{mecanico.nombre}</h3>
+                    <span>{mecanico.porcentaje}%</span>
+                  </div>
+                  <GraficoAnual
+                    series={mecanico.meses}
+                    ariaLabel={`Facturación mensual de ${mecanico.nombre} del año ${anioGrafico}`}
+                    compacto
+                  />
+                </article>
+              ))}
+            </div>
+          )
+        ) : porMecanico.length === 0 ? (
           <p className="reportes__vacio">Todavía no hay trabajos entregados para repartir.</p>
         ) : (
           <div className="reportes__barras">
@@ -359,7 +477,7 @@ function Reportes() {
             </h2>
           </div>
           <strong className="reportes__total-valor num">
-            {pesos.format(totalIngresosMecanicos)}
+            <NumeroAnimado valor={totalIngresosMecanicos} formato={(valor) => pesos.format(valor)} />
           </strong>
         </div>
 

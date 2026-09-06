@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import Icon from "../ui/Icon";
+import NumeroAnimado from "../ui/NumeroAnimado";
 import { ErrorDatos } from "../ui/Estados";
 import Kanban from "./Kanban";
 import Buscar from "./Buscar";
@@ -15,7 +16,7 @@ const pesos = new Intl.NumberFormat("es-AR", {
 
 const RESUMEN_VACIO = { enTaller: 0, cerrados: 0, facturado: 0 };
 
-function Inicio({ onHistorial, onReportes, onAbrirFicha, onEditar }) {
+function Inicio({ onAbrirFicha, onEditar }) {
   const consulta = useCallback(() => obtenerResumen(), []);
   const { cargando, error, datos } = useConsulta(consulta, RESUMEN_VACIO);
 
@@ -37,9 +38,6 @@ function Inicio({ onHistorial, onReportes, onAbrirFicha, onEditar }) {
     day: "numeric",
     month: "long",
   });
-
-  // Mientras cargan las cifras se muestra un guion, no un cero que después salta.
-  const cifra = (valor) => (cargando ? "—" : valor);
 
   return (
     <div className="inicio">
@@ -87,14 +85,18 @@ function Inicio({ onHistorial, onReportes, onAbrirFicha, onEditar }) {
           <section className="inicio__cifras" aria-label="Resumen del taller">
             <div className="cifra">
               <span className="cifra__label">Entregados este mes</span>
-              <span className="cifra__valor num">{cifra(resumen.cerrados)}</span>
+              <span className="cifra__valor num">
+                {cargando ? "—" : <NumeroAnimado valor={resumen.cerrados} />}
+              </span>
               <span className="cifra__pie">en el historial</span>
             </div>
 
             <div className="cifra">
               <span className="cifra__label">Total cobrado este mes</span>
               <span className="cifra__valor cifra__valor--monto num cifra__valor--con-ojo">
-                {cargando ? "—" : verTotal ? pesos.format(resumen.facturado) : "••••••"}
+                {cargando ? "—" : verTotal ? (
+                  <NumeroAnimado valor={resumen.facturado} formato={(valor) => pesos.format(valor)} />
+                ) : "••••••"}
                 <button
                   type="button"
                   className="btn-icon cifra__ojo"
@@ -133,29 +135,6 @@ function Inicio({ onHistorial, onReportes, onAbrirFicha, onEditar }) {
             />
           </section>
 
-          <section className="inicio__acciones" aria-label="Otras secciones">
-            <button type="button" className="tile" onClick={onHistorial}>
-              <span className="tile__icono">
-                <Icon name="planilla" size={20} />
-              </span>
-              <span className="tile__texto">
-                <span className="tile__titulo">Historial</span>
-                <span className="tile__desc">Vehículos entregados</span>
-              </span>
-              <Icon name="chevron" size={18} className="tile__flecha" />
-            </button>
-
-            <button type="button" className="tile" onClick={onReportes}>
-              <span className="tile__icono">
-                <Icon name="grafico" size={20} />
-              </span>
-              <span className="tile__texto">
-                <span className="tile__titulo">Reportes</span>
-                <span className="tile__desc">Facturación y saldos pendientes</span>
-              </span>
-              <Icon name="chevron" size={18} className="tile__flecha" />
-            </button>
-          </section>
         </>
       )}
     </div>

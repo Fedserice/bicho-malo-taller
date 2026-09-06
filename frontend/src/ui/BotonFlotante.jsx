@@ -1,13 +1,14 @@
 import Icon from "./Icon";
 import "./BotonFlotante.css";
 
-/** El acceso a "Nuevo ingreso": un + redondo, siempre a mano, como el
- * botón de crear de una app de celular. Vive en App.jsx, fuera de
- * cada pantalla, para estar disponible desde cualquier lado. */
-function BotonFlotante({ onClick }) {
+/** Accesos flotantes globales para los tres destinos operativos principales. */
+function BotonFlotante({ onClick, tipo = "nuevo", etiqueta }) {
+  const icono = tipo === "historial" ? "planilla" : tipo === "reportes" ? "grafico" : "mas";
+  const clase = `fab fab--${tipo}`;
+
   return (
-    <button type="button" className="fab" onClick={onClick} aria-label="Nuevo ingreso">
-      <Icon name="mas" size={26} strokeWidth={2.4} />
+    <button type="button" className={clase} onClick={onClick} aria-label={etiqueta}>
+      <Icon name={icono} size={tipo === "nuevo" ? 26 : 23} strokeWidth={2.4} />
     </button>
   );
 }

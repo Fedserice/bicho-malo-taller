@@ -12,6 +12,198 @@
   gap: 18px;
 }
 
+.reportes__seccion-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.reportes__vista {
+  display: inline-flex;
+  flex: none;
+  padding: 3px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r);
+  background: var(--surface-2);
+}
+
+.reportes__vista-boton {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--ink-3);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.reportes__vista-boton--activo {
+  background: var(--ink);
+  color: var(--ink-inv);
+}
+
+.reportes__vista-boton:not(.reportes__vista-boton--activo):hover {
+  color: var(--ink);
+  background: var(--surface-3);
+}
+
+.reportes__grafico {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  min-height: 280px;
+  overflow: hidden;
+  padding: 18px 12px 8px 0;
+  border-top: 1px solid var(--line);
+}
+
+.reportes__grafico--compacto {
+  grid-template-columns: 42px minmax(0, 1fr);
+  min-height: 202px;
+  padding-top: 12px;
+}
+
+.reportes__eje-y {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 226px;
+  padding: 0 8px 0 0;
+  color: var(--ink-3);
+  font-size: 0.68rem;
+  text-align: right;
+}
+
+.reportes__grafico-area {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  height: 250px;
+  border-bottom: 1px solid var(--line-strong);
+}
+
+.reportes__grafico--compacto .reportes__grafico-area {
+  height: 150px;
+}
+
+.reportes__grafico--compacto .reportes__barras-anuales {
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 2px;
+  padding-inline: 2px;
+}
+
+.reportes__grafico--compacto .reportes__barra-columna {
+  width: min(20px, 100%);
+}
+
+.reportes__grafico--compacto .reportes__mes-etiqueta {
+  font-size: 0.58rem;
+  letter-spacing: -0.02em;
+}
+
+.reportes__lineas,
+.reportes__barras-anuales {
+  position: absolute;
+  inset: 0 0 24px;
+}
+
+.reportes__lineas {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.reportes__lineas span {
+  width: 100%;
+  border-top: 1px dashed var(--line);
+}
+
+.reportes__barras-anuales {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(28px, 1fr));
+  align-items: end;
+  gap: 8px;
+  box-sizing: border-box;
+  padding: 0 8px;
+}
+
+.reportes__mes-barra {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  height: 100%;
+  min-width: 0;
+}
+
+.reportes__barra-columna {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-direction: column;
+  width: min(34px, 100%);
+  height: 100%;
+}
+
+.reportes__barra-relleno {
+  display: block;
+  width: 100%;
+  min-height: 0;
+  border: 1px solid var(--accent-ink);
+  border-bottom: 0;
+  border-radius: var(--r-sm) var(--r-sm) 0 0;
+  background: var(--accent);
+  transition: height var(--dur-slow) var(--ease-out);
+}
+
+.reportes__mes-etiqueta {
+  position: absolute;
+  bottom: -21px;
+  color: var(--ink-3);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+}
+
+.reportes__graficos-mecanicos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 18px;
+}
+
+.reportes__grafico-mecanico {
+  min-width: 0;
+  overflow: hidden;
+  padding: 14px 14px 4px;
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+}
+
+.reportes__grafico-mecanico-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.reportes__grafico-mecanico-head h3 {
+  min-width: 0;
+  font-size: 1rem;
+  overflow-wrap: anywhere;
+}
+
+.reportes__grafico-mecanico-head span {
+  flex: none;
+  color: var(--accent-ink);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
 .reportes__vacio {
   color: var(--ink-3);
   font-size: 0.9rem;
@@ -88,6 +280,43 @@
 }
 
 @media (max-width: 560px) {
+  .reportes__seccion-head {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .reportes__grafico {
+    grid-template-columns: 48px minmax(0, 1fr);
+    padding-right: 0;
+  }
+
+  .reportes__grafico--compacto {
+    grid-template-columns: 40px minmax(0, 1fr);
+  }
+
+  .reportes__barras-anuales {
+    gap: 3px;
+    padding: 0 3px;
+  }
+
+  .reportes__grafico--compacto .reportes__barras-anuales {
+    gap: 1px;
+    padding-inline: 1px;
+  }
+
+  .reportes__barra-columna {
+    width: min(24px, 100%);
+  }
+
+  .reportes__grafico--compacto .reportes__eje-y {
+    padding-right: 4px;
+    font-size: 0.58rem;
+  }
+
+  .reportes__graficos-mecanicos {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
   .reportes__total-head {
     flex-direction: column;
     gap: 8px;
@@ -390,4 +619,8 @@
   font-size: 0.8rem;
   opacity: 0.75;
   white-space: nowrap;
+}
+
+.reportes__grafico--compacto .reportes__eje-y {
+  height: 126px;
 }

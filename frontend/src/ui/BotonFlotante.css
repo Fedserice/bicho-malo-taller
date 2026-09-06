@@ -1,14 +1,20 @@
 /* ============================================================
-   Botón flotante — acceso fijo a "Nuevo ingreso"
+   Accesos flotantes — historial, nuevo ingreso y reportes
    ============================================================ */
 
-.fab {
+.navegacion-flotante {
   position: fixed;
   left: 50%;
   bottom: calc(env(safe-area-inset-bottom, 0px) + 20px);
-  transform: translateX(-50%);
   z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  transform: translateX(-50%);
+}
 
+.fab {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -16,13 +22,9 @@
   height: 60px;
   border: none;
   border-radius: 50%;
-
   background: var(--accent);
   color: var(--on-accent);
-  box-shadow:
-    var(--shadow-2),
-    0 0 0 5px var(--bg);
-
+  box-shadow: var(--shadow-2), 0 0 0 5px var(--bg);
   transition:
     transform var(--dur-press) var(--ease-out),
     background var(--dur-fast) ease,
@@ -33,25 +35,63 @@
   stroke: var(--on-accent);
 }
 
+.fab--historial,
+.fab--reportes {
+  width: 50px;
+  height: 50px;
+  background: var(--surface-2);
+  color: var(--ink);
+  box-shadow: var(--shadow-2), 0 0 0 4px var(--bg);
+}
+
+.fab--historial .icon,
+.fab--reportes .icon {
+  stroke: var(--accent);
+}
+
 @media (hover: hover) and (pointer: fine) {
   .fab:hover {
     background: var(--accent-hover);
-    transform: translateX(-50%) translateY(var(--lift));
+    transform: translateY(-4px) scale(1.12);
+    box-shadow: var(--shadow-2), 0 0 0 7px var(--bg), 0 0 0 12px var(--accent-ring);
+  }
+
+  .fab--historial:hover,
+  .fab--reportes:hover {
+    background: var(--surface-3);
   }
 }
 
 .fab:active {
-  transform: translateX(-50%) scale(var(--press));
+  transform: scale(0.9);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.28), 0 0 0 5px var(--bg), 0 0 0 9px var(--accent-ring);
+  transition-duration: 80ms;
+}
+
+@keyframes fab-pulso {
+  0% { box-shadow: var(--shadow-2), 0 0 0 5px var(--bg), 0 0 0 5px var(--accent-ring); }
+  100% { box-shadow: var(--shadow-2), 0 0 0 5px var(--bg), 0 0 0 17px transparent; }
 }
 
 .fab:focus-visible {
   outline-offset: 4px;
+  animation: fab-pulso 700ms var(--ease-out);
 }
 
 @media (max-width: 560px) {
+  .navegacion-flotante {
+    gap: 12px;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 16px);
+  }
+
   .fab {
     width: 56px;
     height: 56px;
-    bottom: calc(env(safe-area-inset-bottom, 0px) + 16px);
+  }
+
+  .fab--historial,
+  .fab--reportes {
+    width: 46px;
+    height: 46px;
   }
 }

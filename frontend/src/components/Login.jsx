@@ -1,6 +1,5 @@
 import { useState } from "react";
 import Icon from "../ui/Icon";
-import logo from "../assets/logo.png";
 import { supabase } from "../lib/supabase";
 import "./Login.css";
 
@@ -72,7 +71,6 @@ function Login() {
         <aside className="login__marca">
           <div className="login__marca-top">
             <span className="login__badge">Sistema interno</span>
-            <img src={logo} alt="Bicho Malo Taller" className="login__logo" />
           </div>
 
           <div className="login__marca-texto">

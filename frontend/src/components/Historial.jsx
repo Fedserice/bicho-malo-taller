@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
 import Icon from "../ui/Icon";
+import NumeroAnimado from "../ui/NumeroAnimado";
 import Patente from "../ui/Patente";
 import EstadoChip from "../ui/EstadoChip";
 import { Cargando, ErrorDatos } from "../ui/Estados";
@@ -173,7 +174,10 @@ function Historial({ onSeleccionar }) {
                 </span>
               </span>
               <span className="registro__total num">
-                {pesos.format(Number(ingreso.totalCobrado) || 0)}
+                <NumeroAnimado
+                  valor={Number(ingreso.totalCobrado) || 0}
+                  formato={(valor) => pesos.format(valor)}
+                />
               </span>
               <EstadoChip estado={ingreso.estado} />
               <Icon name="chevron" size={18} className="registro__flecha" />

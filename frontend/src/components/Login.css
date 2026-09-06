@@ -7,10 +7,11 @@
    ============================================================ */
 .login {
   position: relative;
+  z-index: 0;
   min-height: 100vh;
   display: flex;
   align-items: stretch;
-  background: #252724;
+  background: transparent;
   overflow: hidden;
 }
 
@@ -19,7 +20,7 @@
   inset: 0 auto 0 0;
   width: 9px;
   height: auto;
-  background: var(--accent);
+  background: #5227ff;
   opacity: 1;
   pointer-events: none;
 }
@@ -78,10 +79,10 @@
   gap: 8px;
   padding: 6px 0;
   border: 0;
-  border-bottom: 1px solid rgba(255, 154, 103, 0.7);
+  border-bottom: 1px solid rgba(196, 181, 253, 0.7);
   border-radius: 0;
   background: transparent;
-  color: #ff9a67;
+  color: #ddd6fe;
   font-size: 0.7rem;
   font-weight: 700;
   letter-spacing: 0.12em;
@@ -92,13 +93,10 @@
   display: block;
   width: min(100%, 360px);
   max-height: 120px;
-  padding: 10px 14px;
-  background: var(--surface);
-  border: 1px solid #d5d0c5;
-  border-left: 5px solid var(--accent);
-  box-shadow: 5px 5px 0 var(--accent);
+  padding: 0;
   object-fit: contain;
   filter: none;
+  mix-blend-mode: multiply;
 }
 
 .login__marca-texto {
@@ -110,7 +108,7 @@
 .login__marca-texto h1 {
   display: flex;
   flex-direction: column;
-  color: var(--ink-inv);
+  color: #ffffff;
   font-size: clamp(3rem, 2rem + 4vw, 5.8rem);
   line-height: 0.86;
   letter-spacing: -0.08em;
@@ -118,7 +116,7 @@
 }
 
 .login__marca-texto h1 span {
-  color: #ff9a67;
+  color: #c4b5fd;
 }
 
 .login__marca-texto p {
@@ -152,7 +150,7 @@
 
 .login__lista .icon {
   flex: none;
-  color: #ff9a67;
+  color: #c4b5fd;
 }
 
 .login__acceso {
@@ -185,7 +183,7 @@
   background: var(--surface);
   border: 0;
   border-radius: var(--r);
-  box-shadow: 10px 10px 0 var(--accent);
+  box-shadow: 10px 10px 0 #5227ff;
 }
 
 .login__caja-head {
@@ -202,7 +200,7 @@
   width: 42px;
   height: 42px;
   border-radius: 50%;
-  background: var(--accent);
+  background: #5227ff;
   border: 0;
   color: var(--on-accent);
 }
@@ -254,8 +252,8 @@
 
 .campo input:focus {
   outline: none;
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-ring);
+  border-color: #7c3aed;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.24);
 }
 
 .login__clave {
@@ -298,14 +296,14 @@
 }
 
 .btn--primary {
-  background: var(--accent);
-  color: var(--on-accent);
-  border: 1px solid var(--accent);
+  background: #5227ff;
+  color: #ffffff;
+  border: 1px solid #5227ff;
   box-shadow: none;
 }
 
 .btn--primary:hover {
-  background: var(--accent-hover);
+  background: #6d3cff;
 }
 
 .btn--lg {
