@@ -19,8 +19,13 @@ const SIGUIENTE_ESTADO = {
   Finalizado: "Entregado",
 };
 
-function Tarjeta({ ingreso, onSeleccionar, onEditar, onAvanzar, moviendo }) {
+const ESTADO_ANTERIOR = {
+  Finalizado: "En reparación",
+};
+
+function Tarjeta({ ingreso, onSeleccionar, onEditar, onAvanzar, onRetroceder, moviendo }) {
   const siguiente = SIGUIENTE_ESTADO[ingreso.estado];
+  const anterior = ESTADO_ANTERIOR[ingreso.estado];
   const saldo = Number(ingreso.saldo) || 0;
 
   return (
@@ -50,7 +55,7 @@ function Tarjeta({ ingreso, onSeleccionar, onEditar, onAvanzar, moviendo }) {
         {ingreso.motivo?.trim() && <p className="kanban__motivo">{ingreso.motivo}</p>}
       </button>
 
-      <div className="kanban__acciones">
+      <div className={`kanban__acciones${anterior ? " kanban__acciones--finalizado" : ""}`}>
         <button
           type="button"
           className="btn btn--ghost btn--sm"
@@ -60,6 +65,19 @@ function Tarjeta({ ingreso, onSeleccionar, onEditar, onAvanzar, moviendo }) {
           <Icon name="lapiz" size={15} />
           Editar
         </button>
+
+        {anterior && (
+          <button
+            type="button"
+            className="btn btn--ghost btn--sm"
+            onClick={() => onRetroceder(ingreso, anterior)}
+            disabled={moviendo}
+            title="Volver a En reparación"
+          >
+            <Icon name="izquierda" size={15} />
+            Volver
+          </button>
+        )}
 
         {siguiente && (
           <button
@@ -93,7 +111,7 @@ function Kanban({ onSeleccionar, onEditar, embebido = false }) {
 
   const ingresos = datos ?? [];
 
-  async function avanzar(ingreso, estadoNuevo) {
+  async function cambiarEstado(ingreso, estadoNuevo) {
     setMoviendo(ingreso.id);
     try {
       await cambiarEstadoVisita(ingreso.ultimaVisitaId, estadoNuevo);
@@ -168,7 +186,8 @@ function Kanban({ onSeleccionar, onEditar, embebido = false }) {
                       ingreso={ingreso}
                       onSeleccionar={onSeleccionar}
                       onEditar={editar}
-                      onAvanzar={avanzar}
+                      onAvanzar={cambiarEstado}
+                      onRetroceder={cambiarEstado}
                       moviendo={moviendo === ingreso.id}
                     />
                   ))}

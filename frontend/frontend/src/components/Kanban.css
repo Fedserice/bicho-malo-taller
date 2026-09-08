@@ -179,6 +179,10 @@
   border-top: 1px solid var(--line);
 }
 
+.kanban__acciones--finalizado {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .kanban__acciones .btn {
   width: 100%;
   min-width: 0;
