@@ -11,6 +11,7 @@ import BotonFlotante from "./ui/BotonFlotante";
 import { Cargando } from "./ui/Estados";
 import { useToast } from "./ui/useToast";
 import { supabase, hayConfig } from "./lib/supabase";
+import logo from "./assets/logo1-transparente.png";
 import "./App.css";
 
 /**
@@ -182,8 +183,8 @@ function App() {
               <span className="topbar__volver-texto">Volver</span>
             </button>
           ) : (
-            <span className="marca-mini" aria-hidden="true">
-              BM
+            <span className="marca-mini">
+              <img src={logo} alt="Bicho Malo" />
             </span>
           )}
 

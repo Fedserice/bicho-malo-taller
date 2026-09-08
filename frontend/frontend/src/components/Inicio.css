@@ -18,6 +18,35 @@
   text-transform: uppercase;
 }
 
+.inicio__titulo-fila {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.reloj-argentina {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex: none;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-pill);
+  background: color-mix(in srgb, var(--surface) 82%, var(--accent) 18%);
+  color: var(--accent-ink);
+  box-shadow: var(--shadow-1);
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.reloj-argentina__hora {
+  min-width: 6.1ch;
+  font-size: 1.15rem;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+}
+
 /* ------------------------------------------------------------
    Cifras del taller
    ------------------------------------------------------------ */
@@ -77,6 +106,12 @@
 }
 
 @media (max-width: 720px) {
+  .inicio__titulo-fila {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+  }
+
   .inicio__cifras {
     grid-template-columns: 1fr;
   }

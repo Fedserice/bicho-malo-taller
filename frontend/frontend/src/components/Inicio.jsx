@@ -16,6 +16,32 @@ const pesos = new Intl.NumberFormat("es-AR", {
 
 const RESUMEN_VACIO = { enTaller: 0, cerrados: 0, facturado: 0 };
 
+const horaArgentina = new Intl.DateTimeFormat("es-AR", {
+  timeZone: "America/Argentina/Buenos_Aires",
+  hour: "2-digit",
+  minute: "2-digit",
+  second: "2-digit",
+  hour12: false,
+});
+
+function RelojArgentina() {
+  const [ahora, setAhora] = useState(() => new Date());
+
+  useEffect(() => {
+    const intervalo = setInterval(() => setAhora(new Date()), 1000);
+    return () => clearInterval(intervalo);
+  }, []);
+
+  return (
+    <div className="reloj-argentina" aria-label={`Hora de Argentina: ${horaArgentina.format(ahora)}`}>
+      <Icon name="reloj" size={16} />
+      <time className="reloj-argentina__hora" dateTime={ahora.toISOString()}>
+        {horaArgentina.format(ahora)}
+      </time>
+    </div>
+  );
+}
+
 function Inicio({ onAbrirFicha, onEditar }) {
   const consulta = useCallback(() => obtenerResumen(), []);
   const { cargando, error, datos } = useConsulta(consulta, RESUMEN_VACIO);
@@ -43,7 +69,10 @@ function Inicio({ onAbrirFicha, onEditar }) {
     <div className="inicio">
       <header className="inicio__head">
         <span className="eyebrow">{hoy}</span>
-        <h1>Panel del taller</h1>
+        <div className="inicio__titulo-fila">
+          <h1>Panel del taller</h1>
+          <RelojArgentina />
+        </div>
       </header>
 
       {/* Buscador: patente, cliente, vehículo, trabajo u observaciones */}
