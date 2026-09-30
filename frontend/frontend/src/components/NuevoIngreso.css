@@ -111,6 +111,38 @@
   grid-column: span 2;
 }
 
+.patente-existente {
+  display: grid;
+  gap: 10px;
+  margin-top: 10px;
+  padding: 12px;
+  border: 1px solid var(--accent);
+  border-radius: var(--r-sm);
+  background: var(--surface-2);
+}
+
+.patente-existente p {
+  margin: 0;
+  color: var(--ink);
+  font-size: 0.88rem;
+}
+
+.patente-existente__acciones {
+  display: flex;
+  gap: 8px;
+}
+
+.patente-existente__acciones .btn {
+  min-height: 36px;
+  padding: 7px 12px;
+  font-size: 0.82rem;
+}
+
+.patente-existente__error {
+  display: block;
+  margin-top: 8px;
+}
+
 @media (max-width: 640px) {
   .rejilla-2 {
     grid-template-columns: 1fr;

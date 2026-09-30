@@ -1,11 +1,13 @@
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import Icon from "../ui/Icon";
 import NumeroAnimado from "../ui/NumeroAnimado";
 import Patente from "../ui/Patente";
 import EstadoChip from "../ui/EstadoChip";
 import { Cargando, ErrorDatos } from "../ui/Estados";
+import { descargarComprobanteEntrega } from "../lib/comprobanteHtml";
 import { obtenerFichaVehiculo } from "../lib/datos";
 import { useConsulta } from "../lib/useConsulta";
+import { useToast } from "../ui/useToast";
 import "./FichaIngreso.css";
 
 const pesos = new Intl.NumberFormat("es-AR", {
@@ -16,11 +18,137 @@ const pesos = new Intl.NumberFormat("es-AR", {
 
 const kilometros = new Intl.NumberFormat("es-AR");
 
-function Visita({ visita, esUltima }) {
+function fechaLocal(valor) {
+  const partes = /^(\d{4})-(\d{2})-(\d{2})$/.exec(valor ?? "");
+  if (!partes) return null;
+
+  return new Date(Number(partes[1]), Number(partes[2]) - 1, Number(partes[3]));
+}
+
+function LineaTiempo({ visitas }) {
+  const hoy = new Date();
+  const primerMes = new Date(hoy.getFullYear(), hoy.getMonth() - 11, 1);
+  const meses = Array.from({ length: 12 }, (_, indice) => {
+    const fecha = new Date(primerMes.getFullYear(), primerMes.getMonth() + indice, 1);
+    const clave = `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, "0")}`;
+
+    return {
+      clave,
+      fecha,
+      eventos: [],
+    };
+  });
+  const mesesPorClave = new Map(meses.map((mes) => [mes.clave, mes]));
+
+  visitas.forEach((visita) => {
+    const fechas = [
+      { valor: visita.fecha, tipo: "ingreso" },
+      { valor: visita.fechaEntrega, tipo: "entrega" },
+    ];
+
+    fechas.forEach(({ valor, tipo }) => {
+      const fecha = fechaLocal(valor);
+      if (!fecha) return;
+
+      const clave = `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, "0")}`;
+      const mes = mesesPorClave.get(clave);
+      if (!mes) return;
+
+      const diasDelMes = new Date(fecha.getFullYear(), fecha.getMonth() + 1, 0).getDate();
+      mes.eventos.push({
+        id: `${visita.id}-${tipo}`,
+        fecha: valor,
+        fechaLarga: fecha.toLocaleDateString("es-AR", {
+          day: "numeric",
+          month: "short",
+          year: "numeric",
+        }),
+        dia: fecha.getDate(),
+        tipo,
+        posicion: ((fecha.getDate() - 0.5) / diasDelMes) * 100,
+      });
+    });
+  });
+
+  meses.forEach((mes) => {
+    mes.eventos.sort(
+      (a, b) =>
+        a.fecha.localeCompare(b.fecha) ||
+        (a.tipo === b.tipo ? 0 : a.tipo === "ingreso" ? -1 : 1)
+    );
+  });
+
+  return (
+    <section className="linea-tiempo" aria-labelledby="linea-tiempo-titulo">
+      <div className="linea-tiempo__encabezado">
+        <div>
+          <span className="eyebrow">Actividad del vehículo</span>
+          <h2 id="linea-tiempo-titulo">Últimos 12 meses</h2>
+        </div>
+        <div className="linea-tiempo__leyenda" aria-label="Tipos de evento">
+          <span><i className="linea-tiempo__punto linea-tiempo__punto--ingreso" />Ingreso</span>
+          <span><i className="linea-tiempo__punto linea-tiempo__punto--entrega" />Entrega</span>
+        </div>
+      </div>
+
+      <div className="linea-tiempo__desplazamiento" tabIndex="0" aria-label="Línea de tiempo mensual">
+        <div className="linea-tiempo__meses">
+          {meses.map((mes) => (
+            <div className="linea-tiempo__mes" key={mes.clave}>
+              <h3 title={mes.fecha.toLocaleDateString("es-AR", { month: "long", year: "numeric" })}>
+                {mes.fecha.toLocaleDateString("es-AR", { month: "short" }).replace(".", "")}
+              </h3>
+              <div className="linea-tiempo__eje" aria-hidden="true">
+                {mes.eventos.map((evento) => (
+                  <span
+                    className={`linea-tiempo__marca linea-tiempo__marca--${evento.tipo}`}
+                    key={evento.id}
+                    style={{ "--posicion": `${evento.posicion}%` }}
+                  />
+                ))}
+              </div>
+              {mes.eventos.length > 0 ? (
+                <ul className="linea-tiempo__eventos">
+                  {mes.eventos.map((evento) => (
+                    <li
+                      className={`linea-tiempo__evento linea-tiempo__evento--${evento.tipo}`}
+                      key={evento.id}
+                      title={`${evento.tipo === "ingreso" ? "Ingreso" : "Entrega"}: ${evento.fechaLarga}`}
+                    >
+                      <time dateTime={evento.fecha}>{evento.dia}</time>
+                      <span>{evento.tipo === "ingreso" ? "Ingreso" : "Entrega"}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <span className="linea-tiempo__vacio">—</span>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Visita({ visita, esUltima, vehiculo }) {
+  const [descargando, setDescargando] = useState(false);
+  const avisar = useToast();
   const manoObra = Number(visita.manoObra) || 0;
   const totalTrabajo = Number(visita.totalTrabajo) || 0;
   const cobrado = Number(visita.totalCobrado) || 0;
-  const saldo = totalTrabajo - cobrado;
+  const saldo = manoObra - cobrado;
+
+  async function descargarComprobante() {
+    setDescargando(true);
+    try {
+      await descargarComprobanteEntrega({ visita, vehiculo });
+    } catch (error) {
+      avisar(error.message || "No se pudo generar el comprobante", "error");
+    } finally {
+      setDescargando(false);
+    }
+  }
 
   return (
     <article className={`bloque bloque--ancho visita ${esUltima ? "visita--actual" : ""}`}>
@@ -29,7 +157,25 @@ function Visita({ visita, esUltima }) {
           <Icon name="llave" size={17} />
           {visita.fecha || "Sin fecha"}
         </h2>
-        <EstadoChip estado={visita.estado} />
+        <div className="visita__acciones">
+          <EstadoChip estado={visita.estado} />
+          {visita.estado === "Entregado" && (
+            <button
+              type="button"
+              className="btn btn--outline btn--sm"
+              onClick={descargarComprobante}
+              disabled={descargando}
+              title="Descargar comprobante de entrega"
+            >
+              {descargando ? (
+                <span className="spinner spinner--boton" aria-hidden="true" />
+              ) : (
+                <Icon name="descargar" size={15} />
+              )}
+              Imprimir / guardar PDF
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="bloque__datos bloque__datos--columna">
@@ -157,6 +303,8 @@ function FichaIngreso({ vehiculoId, onVolver, onEditar, onNuevoTrabajo }) {
         </div>
       </header>
 
+      <LineaTiempo visitas={visitas} />
+
       <div className="ficha__acciones">
         {enTaller ? (
           <button
@@ -229,7 +377,7 @@ function FichaIngreso({ vehiculoId, onVolver, onEditar, onNuevoTrabajo }) {
 
         <div className="ficha__grid">
           {visitas.map((visita, i) => (
-            <Visita key={visita.id} visita={visita} esUltima={i === 0} />
+              <Visita key={visita.id} visita={visita} esUltima={i === 0} vehiculo={ficha} />
           ))}
         </div>
       </div>

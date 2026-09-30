@@ -1,8 +1,13 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Icon from "../ui/Icon";
 import Patente from "../ui/Patente";
 import { useToast } from "../ui/useToast";
-import { guardarIngreso, listarMecanicos } from "../lib/datos";
+import {
+  buscarResumenVehiculoPorPatente,
+  guardarIngreso,
+  listarMecanicos,
+  patenteValida,
+} from "../lib/datos";
 import { useConsulta } from "../lib/useConsulta";
 import "./NuevoIngreso.css";
 
@@ -47,6 +52,8 @@ function NuevoIngreso({ onVolver, ingreso }) {
   const [datos, setDatos] = useState({ ...ESTADO_INICIAL, ...(ingreso || {}) });
   const [faltantes, setFaltantes] = useState([]);
   const [guardando, setGuardando] = useState(null);
+  const [vehiculoDetectado, setVehiculoDetectado] = useState(null);
+  const [errorBusquedaPatente, setErrorBusquedaPatente] = useState("");
   const [ingresoPrevio, setIngresoPrevio] = useState(ingreso);
   const formRef = useRef(null);
   const avisar = useToast();
@@ -65,7 +72,27 @@ function NuevoIngreso({ onVolver, ingreso }) {
   // Ficha existente a la que se le abre un trabajo nuevo: ya trae
   // vehículo y cliente cargados, pero todavía no es una visita.
   const esNuevoTrabajo = !datos.id && Boolean(datos.vehiculoId);
+  const puedeBuscarVehiculo = !datos.id && !datos.vehiculoId;
   const puedeFinalizar = esEdicion && datos.estado === "En reparación";
+
+  useEffect(() => {
+    if (!puedeBuscarVehiculo || !patenteValida(datos.patente)) return undefined;
+
+    let vigente = true;
+    const temporizador = window.setTimeout(async () => {
+      try {
+        const encontrado = await buscarResumenVehiculoPorPatente(datos.patente);
+        if (vigente) setVehiculoDetectado(encontrado);
+      } catch {
+        if (vigente) setErrorBusquedaPatente("No se pudo comprobar la patente.");
+      }
+    }, 350);
+
+    return () => {
+      vigente = false;
+      window.clearTimeout(temporizador);
+    };
+  }, [datos.patente, puedeBuscarVehiculo]);
 
   // El mecánico guardado se mantiene aunque ya no esté en la lista activa.
   const nombresMecanicos = (mecanicos ?? []).map((m) => m.nombre);
@@ -77,6 +104,11 @@ function NuevoIngreso({ onVolver, ingreso }) {
   function cambiarDato(e) {
     const { name, value, type, checked } = e.target;
 
+    if (name === "patente") {
+      setVehiculoDetectado(null);
+      setErrorBusquedaPatente("");
+    }
+
     setDatos((previos) => ({
       ...previos,
       [name]: type === "checkbox" ? checked : value,
@@ -86,6 +118,19 @@ function NuevoIngreso({ onVolver, ingreso }) {
     if (faltantes.includes(name)) {
       setFaltantes((previos) => previos.filter((campo) => campo !== name));
     }
+  }
+
+  function autocompletarVehiculo() {
+    if (!vehiculoDetectado) return;
+
+    setDatos((previos) => ({
+      ...previos,
+      cliente: vehiculoDetectado.cliente,
+      vehiculo: vehiculoDetectado.vehiculo,
+      telefono: vehiculoDetectado.telefono,
+      observaciones: vehiculoDetectado.observaciones,
+    }));
+    setVehiculoDetectado(null);
   }
 
   function buscarFaltantes() {
@@ -197,6 +242,28 @@ const saldo = manoObraNum - totalCobradoNum; // positivo = falta cobrar
                 autoCapitalize="characters"
                 spellCheck="false"
               />
+              {vehiculoDetectado && (
+                <div className="patente-existente" role="status">
+                  <p>Este vehículo ya está registrado. ¿Querés autocompletar sus datos?</p>
+                  <div className="patente-existente__acciones">
+                    <button type="button" className="btn btn--solid" onClick={autocompletarVehiculo}>
+                      Autocompletar
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn--outline"
+                      onClick={() => setVehiculoDetectado(null)}
+                    >
+                      Ahora no
+                    </button>
+                  </div>
+                </div>
+              )}
+              {errorBusquedaPatente && (
+                <span className="campo__ayuda patente-existente__error" role="status">
+                  {errorBusquedaPatente}
+                </span>
+              )}
             </div>
 
             <div className={claseCampo("cliente")}>

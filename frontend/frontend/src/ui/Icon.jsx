@@ -59,6 +59,12 @@ const TRAZOS = {
       <path d="M7 3v4a1 1 0 0 0 1 1h7" />
     </>
   ),
+  descargar: (
+    <>
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+      <path d="m7 10 5 5 5-5M12 15V3" />
+    </>
+  ),
   tilde: <path d="M20 6 9 17l-5-5" />,
   tildeCirculo: (
     <>

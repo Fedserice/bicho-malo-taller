@@ -5,7 +5,7 @@ import { supabase } from "./supabase";
  * Modelo: clientes → vehículos (ficha única) → visitas (historial).
  * `vehiculos_resumen` es una vista de solo lectura: un vehículo por
  * fila con los datos de su última visita. Alimenta el Panel (tablero
- * y buscador) y el Historial.
+ * y buscador); el Historial consulta las visitas individuales.
  */
 
 const ESTADOS = ["En reparación", "Finalizado", "Entregado"];
@@ -57,7 +57,7 @@ function reventar(error) {
 // ------------------------------------------------------------
 
 const COLUMNAS_VISITA = `
-  id, vehiculo_id, fecha, kilometraje, motivo, diagnostico, trabajos,
+  id, vehiculo_id, fecha, fecha_entrega, kilometraje, motivo, diagnostico, trabajos,
   mano_obra, total_trabajo, total_cobrado, saldo, mecanico, estado,
   pendientes, observaciones, creado_en, actualizado_en
 `;
@@ -67,6 +67,7 @@ function desdeFilaVisita(fila) {
     id: fila.id,
     vehiculoId: fila.vehiculo_id,
     fecha: fila.fecha ?? "",
+    fechaEntrega: fila.fecha_entrega ?? "",
     kilometraje: fila.kilometraje ?? "",
     motivo: texto(fila.motivo),
     diagnostico: texto(fila.diagnostico),
@@ -152,6 +153,21 @@ export async function buscarVehiculoPorPatente(patente) {
     cliente: data.clientes?.nombre ?? "",
     telefono: data.clientes?.telefono ?? "",
   };
+}
+
+/** Busca los datos resumidos de un vehículo para ofrecer autocompletado. */
+export async function buscarResumenVehiculoPorPatente(patente) {
+  const p = normalizarPatente(patente);
+  if (!patenteValida(p)) return null;
+
+  const { data, error } = await supabase
+    .from("vehiculos_resumen")
+    .select("*")
+    .eq("patente", p)
+    .maybeSingle();
+
+  reventar(error);
+  return data ? desdeFilaResumen(data) : null;
 }
 
 /** Crea cliente + vehículo juntos (alta de un auto que nunca vino). */
@@ -302,16 +318,28 @@ export async function listarEnTaller() {
   return (data ?? []).map(desdeFilaResumen);
 }
 
-/** Vehículos cuya última visita quedó entregada — pantalla "Historial". */
+/** Todas las visitas individuales, más recientes primero — pantalla "Historial". */
 export async function listarHistorial() {
   const { data, error } = await supabase
-    .from("vehiculos_resumen")
-    .select("*")
-    .eq("estado", "Entregado")
-    .order("ultimo_movimiento", { ascending: false });
+    .from("visitas")
+    .select(`${COLUMNAS_VISITA}, vehiculos ( id, patente, vehiculo, clientes ( nombre, telefono ) )`)
+    .order("fecha", { ascending: false })
+    .order("creado_en", { ascending: false });
 
   reventar(error);
-  return (data ?? []).map(desdeFilaResumen);
+  return (data ?? []).map((fila) => {
+    const visita = desdeFilaVisita(fila);
+    const vehiculo = fila.vehiculos;
+
+    return {
+      ...visita,
+      vehiculoId: vehiculo?.id ?? fila.vehiculo_id,
+      patente: texto(vehiculo?.patente),
+      vehiculo: texto(vehiculo?.vehiculo),
+      cliente: texto(vehiculo?.clientes?.nombre),
+      telefono: texto(vehiculo?.clientes?.telefono),
+    };
+  });
 }
 
 /** Busca vehículos por patente, cliente, vehículo o lo hecho al auto. */
@@ -429,6 +457,13 @@ export async function guardarIngreso(datos, opciones = {}) {
 
   if (!vehiculoExistente) {
     vehiculoExistente = await crearClienteYVehiculo({
+      patente: datos.patente,
+      vehiculo: datos.vehiculo,
+      cliente: datos.cliente,
+      telefono: datos.telefono,
+    });
+  } else {
+    await actualizarVehiculoYCliente(vehiculoExistente.id, vehiculoExistente.clienteId, {
       patente: datos.patente,
       vehiculo: datos.vehiculo,
       cliente: datos.cliente,

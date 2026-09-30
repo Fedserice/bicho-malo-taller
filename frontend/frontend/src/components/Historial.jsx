@@ -14,6 +14,15 @@ const pesos = new Intl.NumberFormat("es-AR", {
   maximumFractionDigits: 0,
 });
 
+function normalizarBusqueda(valor) {
+  return (valor ?? "")
+    .toString()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+}
+
 function Historial({ onSeleccionar }) {
   const consulta = useCallback(() => listarHistorial(), []);
   const { cargando, error, datos } = useConsulta(consulta, []);
@@ -22,7 +31,7 @@ function Historial({ onSeleccionar }) {
   const [desde, setDesde] = useState("");
   const [hasta, setHasta] = useState("");
   const [mecanico, setMecanico] = useState("");
-  const [trabajo, setTrabajo] = useState("");
+  const [busqueda, setBusqueda] = useState("");
 
   // Lista de mecánicos que aparecen en el historial, para armar el <select>
   const mecanicosDisponibles = useMemo(() => {
@@ -35,30 +44,46 @@ function Historial({ onSeleccionar }) {
       if (desde && (!i.fecha || i.fecha < desde)) return false;
       if (hasta && (!i.fecha || i.fecha > hasta)) return false;
       if (mecanico && i.mecanico !== mecanico) return false;
-      if (trabajo) {
-        const texto = `${i.trabajos || ""} ${i.motivo || ""} ${i.diagnostico || ""}`.toLowerCase();
-        if (!texto.includes(trabajo.trim().toLowerCase())) return false;
+      if (busqueda.trim()) {
+        const termino = normalizarBusqueda(busqueda);
+        const campos = [
+          i.patente,
+          i.cliente,
+          i.telefono,
+          i.vehiculo,
+          i.trabajos,
+          i.motivo,
+          i.diagnostico,
+          i.observaciones,
+        ];
+        const texto = normalizarBusqueda(campos.filter(Boolean).join(" "));
+        const soloTelefono = /^[\d\s()+.-]+$/.test(busqueda.trim());
+        const digitos = busqueda.replace(/\D/g, "");
+        const telefono = (i.telefono || "").replace(/\D/g, "");
+        const coincideTelefono = soloTelefono && digitos && telefono.includes(digitos);
+
+        if (!texto.includes(termino) && !coincideTelefono) return false;
       }
       return true;
     });
-  }, [ingresos, desde, hasta, mecanico, trabajo]);
+  }, [ingresos, desde, hasta, mecanico, busqueda]);
 
-  const hayFiltrosActivos = desde || hasta || mecanico || trabajo;
+  const hayFiltrosActivos = desde || hasta || mecanico || busqueda;
 
   function limpiarFiltros() {
     setDesde("");
     setHasta("");
     setMecanico("");
-    setTrabajo("");
+    setBusqueda("");
   }
 
   return (
     <div className="historial">
       <header className="pantalla-head">
         <div className="pantalla-head__texto">
-          <span className="eyebrow">Trabajos cerrados</span>
+          <span className="eyebrow">Ingresos registrados</span>
           <h1>Historial</h1>
-          <p>Tocá un registro para abrir la ficha completa del vehículo.</p>
+          <p>Cada visita aparece por separado. Tocá un registro para abrir la ficha del vehículo.</p>
         </div>
         {!cargando && ingresosFiltrados.length > 0 && (
           <div className="pantalla-head__cuenta">
@@ -107,13 +132,13 @@ function Historial({ onSeleccionar }) {
         </div>
 
         <div className="campo campo--busqueda">
-          <label htmlFor="filtro-trabajo">Trabajo</label>
+          <label htmlFor="filtro-busqueda">Buscar</label>
           <input
-            id="filtro-trabajo"
+            id="filtro-busqueda"
             type="search"
-            placeholder="Buscar por trabajo realizado…"
-            value={trabajo}
-            onChange={(e) => setTrabajo(e.target.value)}
+            placeholder="Patente, cliente, teléfono o trabajo…"
+            value={busqueda}
+            onChange={(e) => setBusqueda(e.target.value)}
           />
         </div>
 
@@ -133,8 +158,8 @@ function Historial({ onSeleccionar }) {
           <span className="vacio__icono">
             <Icon name="planilla" size={24} />
           </span>
-          <h3>Todavía no hay trabajos cerrados</h3>
-          <p>Cuando finalices un ingreso, el trabajo queda guardado acá con toda su ficha.</p>
+          <h3>Todavía no hay ingresos registrados</h3>
+          <p>Las visitas al taller aparecerán acá, ordenadas por fecha.</p>
         </div>
       )}
 

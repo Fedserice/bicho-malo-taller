@@ -1,0 +1,431 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light" />
+    <title>Constancia de entrega</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --naranja: #d35400;
+        --naranja-claro: #e67e22;
+        --gris-oscuro: #2c3e50;
+        --texto: #334155;
+        --texto-suave: #64748b;
+        --fondo: #f8f9fa;
+        --borde: #e2e8f0;
+        --saldo: #b42318;
+        --ok: #28734f;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: #edf0f2;
+        color: var(--texto);
+        font-family: "Segoe UI", Arial, sans-serif;
+        font-size: 10pt;
+        line-height: 1.45;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      .pagina {
+        width: 210mm;
+        min-height: 297mm;
+        margin: 24px auto;
+        padding: 15mm;
+        background: #fff;
+        box-shadow: 0 8px 32px rgb(44 62 80 / 12%);
+      }
+
+      .encabezado {
+        display: grid;
+        grid-template-columns: 34mm 1fr;
+        align-items: center;
+        gap: 10mm;
+        min-height: 35mm;
+        padding: 5mm 0 7mm;
+        border-top: 3mm solid var(--naranja);
+        border-bottom: 1px solid var(--borde);
+      }
+
+      .encabezado__logo {
+        display: block;
+        width: 34mm;
+        max-height: 29mm;
+        object-fit: contain;
+      }
+
+      .encabezado__taller {
+        text-align: right;
+      }
+
+      .encabezado__nombre {
+        margin: 0 0 2mm;
+        color: var(--gris-oscuro);
+        font-size: 14pt;
+        font-weight: 750;
+        line-height: 1.15;
+      }
+
+      .encabezado__detalle {
+        margin: 1mm 0;
+        color: var(--texto-suave);
+        font-size: 8.5pt;
+      }
+
+      .encabezado__marca {
+        margin-top: 2mm;
+        color: var(--naranja);
+        font-size: 9pt;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+      }
+
+      .titulo {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        gap: 12mm;
+        padding: 9mm 0 6mm;
+      }
+
+      .titulo h1 {
+        margin: 0;
+        color: var(--gris-oscuro);
+        font-size: 19pt;
+        line-height: 1.1;
+      }
+
+      .titulo p {
+        margin: 2mm 0 0;
+        color: var(--texto-suave);
+        font-size: 9pt;
+      }
+
+      .titulo__referencia {
+        flex: none;
+        padding: 2.5mm 3mm;
+        border: 1px solid var(--borde);
+        border-radius: 2mm;
+        color: var(--gris-oscuro);
+        font-size: 8.5pt;
+        font-weight: 750;
+        white-space: nowrap;
+      }
+
+      .seccion {
+        margin-top: 5mm;
+        break-inside: avoid;
+      }
+
+      .seccion__titulo {
+        display: flex;
+        align-items: center;
+        gap: 2.5mm;
+        margin: 0 0 3mm;
+        color: var(--gris-oscuro);
+        font-size: 10pt;
+        font-weight: 750;
+      }
+
+      .seccion__titulo::before {
+        width: 1.2mm;
+        height: 4mm;
+        border-radius: 1mm;
+        background: var(--naranja-claro);
+        content: "";
+      }
+
+      .tarjeta {
+        padding: 5mm;
+        border: 1px solid var(--borde);
+        border-radius: 2.5mm;
+        background: #fff;
+      }
+
+      .datos {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 5mm 6mm;
+      }
+
+      .dato {
+        min-width: 0;
+      }
+
+      .dato__etiqueta {
+        display: block;
+        margin-bottom: 1mm;
+        color: var(--texto-suave);
+        font-size: 7pt;
+        font-weight: 750;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+
+      .dato__valor {
+        display: block;
+        color: var(--gris-oscuro);
+        font-size: 9.5pt;
+        font-weight: 650;
+        overflow-wrap: anywhere;
+      }
+
+      .servicios {
+        overflow: hidden;
+        border: 1px solid var(--borde);
+        border-radius: 2.5mm;
+      }
+
+      .servicio {
+        display: grid;
+        grid-template-columns: 42mm 1fr;
+        gap: 5mm;
+        padding: 4mm 5mm;
+        break-inside: avoid;
+      }
+
+      .servicio + .servicio {
+        border-top: 1px solid var(--borde);
+      }
+
+      .servicio:nth-child(even) {
+        background: var(--fondo);
+      }
+
+      .servicio__etiqueta {
+        color: var(--texto-suave);
+        font-size: 8pt;
+        font-weight: 750;
+      }
+
+      .servicio__valor {
+        margin: 0;
+        color: var(--texto);
+        font-size: 9pt;
+        overflow-wrap: anywhere;
+        white-space: pre-line;
+      }
+
+      .finanzas {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 5mm;
+        margin-top: 7mm;
+        padding: 6mm;
+        border: 1px solid var(--borde);
+        border-radius: 2.5mm;
+        background: var(--fondo);
+        break-inside: avoid;
+      }
+
+      .finanza__etiqueta {
+        display: block;
+        margin-bottom: 2mm;
+        color: var(--texto-suave);
+        font-size: 7.5pt;
+        font-weight: 750;
+        text-transform: uppercase;
+      }
+
+      .finanza__valor {
+        color: var(--gris-oscuro);
+        font-size: 13pt;
+        font-weight: 800;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .finanza--saldo .finanza__valor {
+        color: var(--saldo);
+        font-size: 16pt;
+      }
+
+      .finanza--saldo-cero .finanza__valor {
+        color: var(--ok);
+      }
+
+      .firmas {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 25mm;
+        margin-top: 20mm;
+        break-inside: avoid;
+      }
+
+      .firma {
+        padding-top: 2.5mm;
+        border-top: 1px solid #94a3b8;
+        color: var(--texto-suave);
+        font-size: 7.5pt;
+        text-align: center;
+      }
+
+      .pie {
+        display: flex;
+        justify-content: space-between;
+        gap: 8mm;
+        margin-top: 12mm;
+        padding-top: 3mm;
+        border-top: 1px solid var(--borde);
+        color: var(--texto-suave);
+        font-size: 7pt;
+      }
+
+      @page {
+        size: A4;
+        margin: 15mm;
+      }
+
+      @media print {
+        html,
+        body {
+          width: 100%;
+          min-height: 0;
+          margin: 0;
+          background: #fff;
+        }
+
+        .pagina {
+          width: auto;
+          min-height: 0;
+          margin: 0;
+          padding: 0;
+          box-shadow: none;
+        }
+
+        .finanzas,
+        .tarjeta,
+        .servicio {
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+      }
+
+      @media screen and (max-width: 760px) {
+        .pagina {
+          width: 100%;
+          min-height: 100vh;
+          margin: 0;
+          padding: 24px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="pagina">
+      <header class="encabezado">
+        <img class="encabezado__logo" src="{{LOGO_URL}}" alt="Logo de Bicho Malo Taller" />
+        <div class="encabezado__taller">
+          <h2 class="encabezado__nombre">Gonzalo Ariel Federice Oliveri</h2>
+          <p class="encabezado__detalle">Mendoza 672 - Ciudad de San Luis, Argentina</p>
+          <p class="encabezado__detalle">CUIT 20-43118677-3</p>
+          <div class="encabezado__marca">BICHO MALO TALLER</div>
+        </div>
+      </header>
+
+      <section class="titulo" aria-labelledby="titulo-documento">
+        <div>
+          <h1 id="titulo-documento">CONSTANCIA DE ENTREGA</h1>
+          <p>Comprobante interno de mano de obra - No fiscal</p>
+        </div>
+        <div class="titulo__referencia">REF. {{REFERENCIA}}</div>
+      </section>
+
+      <section class="seccion" aria-labelledby="titulo-datos">
+        <h2 class="seccion__titulo" id="titulo-datos">Cliente y vehículo</h2>
+        <div class="tarjeta datos">
+          <div class="dato">
+            <span class="dato__etiqueta">Cliente</span>
+            <span class="dato__valor">{{CLIENTE}}</span>
+          </div>
+          <div class="dato">
+            <span class="dato__etiqueta">Teléfono</span>
+            <span class="dato__valor">{{TELEFONO}}</span>
+          </div>
+          <div class="dato">
+            <span class="dato__etiqueta">Patente</span>
+            <span class="dato__valor">{{PATENTE}}</span>
+          </div>
+          <div class="dato">
+            <span class="dato__etiqueta">Vehículo</span>
+            <span class="dato__valor">{{VEHICULO}}</span>
+          </div>
+          <div class="dato">
+            <span class="dato__etiqueta">Kilometraje</span>
+            <span class="dato__valor">{{KILOMETRAJE}}</span>
+          </div>
+          <div class="dato">
+            <span class="dato__etiqueta">Mecánico</span>
+            <span class="dato__valor">{{MECANICO}}</span>
+          </div>
+          <div class="dato">
+            <span class="dato__etiqueta">Fecha de ingreso</span>
+            <span class="dato__valor">{{FECHA_INGRESO}}</span>
+          </div>
+          <div class="dato">
+            <span class="dato__etiqueta">Fecha de entrega</span>
+            <span class="dato__valor">{{FECHA_ENTREGA}}</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="seccion" aria-labelledby="titulo-servicio">
+        <h2 class="seccion__titulo" id="titulo-servicio">Detalle del servicio técnico</h2>
+        <div class="servicios">
+          <div class="servicio">
+            <strong class="servicio__etiqueta">Motivo de ingreso</strong>
+            <p class="servicio__valor">{{MOTIVO}}</p>
+          </div>
+          <div class="servicio">
+            <strong class="servicio__etiqueta">Diagnóstico</strong>
+            <p class="servicio__valor">{{DIAGNOSTICO}}</p>
+          </div>
+          <div class="servicio">
+            <strong class="servicio__etiqueta">Trabajos realizados</strong>
+            <p class="servicio__valor">{{TRABAJOS}}</p>
+          </div>
+          {{BLOQUE_OBSERVACIONES}}
+        </div>
+      </section>
+
+      <section class="finanzas" aria-label="Resumen financiero">
+        <div class="finanza">
+          <span class="finanza__etiqueta">Mano de obra</span>
+          <strong class="finanza__valor">{{MANO_OBRA}}</strong>
+        </div>
+        <div class="finanza">
+          <span class="finanza__etiqueta">Cobrado</span>
+          <strong class="finanza__valor">{{COBRADO}}</strong>
+        </div>
+        <div class="finanza {{CLASE_SALDO}}">
+          <span class="finanza__etiqueta">{{ETIQUETA_SALDO}}</span>
+          <strong class="finanza__valor">{{SALDO}}</strong>
+        </div>
+      </section>
+
+      <section class="firmas" aria-label="Firmas de conformidad">
+        <div class="firma">Firma y aclaración del cliente</div>
+        <div class="firma">Recepción del vehículo</div>
+      </section>
+
+      <footer class="pie">
+        <span>Documento interno. No reemplaza una factura fiscal.</span>
+        <span>Ref. {{REFERENCIA}}</span>
+      </footer>
+    </main>
+    <script>
+      window.addEventListener("load", () => {
+        const imprimir = () => window.print();
+        const logo = document.querySelector(".encabezado__logo");
+        if (logo && !logo.complete) logo.addEventListener("load", imprimir, { once: true });
+        else setTimeout(imprimir, 250);
+      });
+    </script>
+  </body>
+</html>
